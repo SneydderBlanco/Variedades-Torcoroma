@@ -7,17 +7,21 @@ import authMiddleware from './authMiddleware.js';
 const router = express.Router();
 const controller = new EcommerceController();
 
-// Configuración de Multer para almacenar archivos en 'uploads/'
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'torcoroma_ecommerce',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
   },
-  filename: (req, file, cb) => {
-    // Renombrar archivo para evitar duplicados y espacios
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, 'producto-' + uniqueSuffix + ext);
-  }
 });
 const upload = multer({ storage });
 

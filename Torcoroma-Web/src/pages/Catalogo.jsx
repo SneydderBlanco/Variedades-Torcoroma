@@ -4,6 +4,8 @@ import { Star } from 'lucide-react';
 import './Catalogo.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
+
 
 export default function Catalogo() {
   const { categoria } = useParams();
@@ -56,7 +58,7 @@ export default function Catalogo() {
             <Link to={`/producto/${prod.id_modelo}?color=${encodeURIComponent(prod.color_nombre)}`} key={`${prod.id_modelo}-${prod.color_nombre}`} className="product-card">
               <div className="product-image-container">
                 {prod.imagen_principal ? (
-                  <img src={`${API_URL}${prod.imagen_principal}`} alt={prod.modelo_nombre} className="product-image" />
+                  <img src={getImgUrl(prod.imagen_principal)} alt={prod.modelo_nombre} className="product-image" />
                 ) : (
                   <div className="image-placeholder">Sin Foto</div>
                 )}

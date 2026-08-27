@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { X, UploadCloud, Image as ImageIcon, Save, Layout } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
+
 
 export default function WebConfigModal({ onClose }) {
   const [loading, setLoading] = useState(false);
@@ -31,8 +33,8 @@ export default function WebConfigModal({ onClose }) {
       if (res.ok) {
         const data = await res.json();
         setConfig(data);
-        if (data.hero_img) setPreviewHero(`${API_URL}${data.hero_img}`);
-        if (data.promo_img) setPreviewPromo(`${API_URL}${data.promo_img}`);
+        if (data.hero_img) setPreviewHero(getImgUrl(data.hero_img));
+        if (data.promo_img) setPreviewPromo(getImgUrl(data.promo_img));
       }
     } catch (error) {
       console.error(error);

@@ -4,6 +4,8 @@ import { useCart } from '../context/CartContext';
 import './CartDrawer.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
+
 
 export default function CartDrawer() {
   const { isDrawerOpen, toggleDrawer, cart, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -60,7 +62,7 @@ export default function CartDrawer() {
               <div key={`${item.id_modelo}-${item.color}-${item.talla}`} className="cart-item">
                 <div className="cart-item-img">
                   {item.imagen ? (
-                    <img src={`${API_URL}${item.imagen}`} alt={item.nombre} />
+                    <img src={getImgUrl(item.imagen)} alt={item.nombre} />
                   ) : (
                     <div className="img-placeholder">Sin Foto</div>
                   )}

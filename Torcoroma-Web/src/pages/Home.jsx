@@ -4,6 +4,8 @@ import { ArrowRight, Star } from 'lucide-react';
 import './Home.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
+
 
 export default function Home() {
   const [destacados, setDestacados] = useState([]);
@@ -81,7 +83,7 @@ export default function Home() {
               <Link to={`/producto/${prod.id_modelo}?color=${encodeURIComponent(prod.color_nombre)}`} key={`${prod.id_modelo}-${prod.color_nombre}`} className="product-card">
                 <div className="product-image-container">
                   {prod.imagen_principal ? (
-                    <img src={`${API_URL}${prod.imagen_principal}`} alt={prod.modelo_nombre} className="product-image" />
+                    <img src={getImgUrl(prod.imagen_principal)} alt={prod.modelo_nombre} className="product-image" />
                   ) : (
                     <div className="image-placeholder">Sin Foto</div>
                   )}
@@ -111,7 +113,7 @@ export default function Home() {
       {/* BANNER PROMOCIONAL */}
       <section 
         className="promo-banner container section-padding"
-        style={webConfig?.promo_img ? { backgroundImage: `url(${API_URL}${webConfig.promo_img})` } : {}}
+        style={webConfig?.promo_img ? { backgroundImage: `url(${getImgUrl(webConfig.promo_img)})` } : {}}
       >
         <div className="promo-content glass">
           <h2>{webConfig?.promo_title || 'Estilo y Confort sin Compromisos.'}</h2>

@@ -5,6 +5,8 @@ import { useCart } from '../context/CartContext';
 import './Producto.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
+
 
 export default function Producto() {
   const { id } = useParams();

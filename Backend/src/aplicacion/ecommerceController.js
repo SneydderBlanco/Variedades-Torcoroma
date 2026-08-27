@@ -241,8 +241,8 @@ export class EcommerceController {
       const { id_modelo } = req.params;
       const { color } = req.body;
       
-      // Ruta relativa que guardaremos en la DB para servir la imagen
-      const ruta_imagen = `/uploads/${req.file.filename}`;
+      // La ruta ahora es la URL completa que nos da Cloudinary
+      const ruta_imagen = req.file.path;
       
       await pool.query(
         `INSERT INTO ecommerce_imagen (id_modelo, ruta_imagen, color_nombre) VALUES ($1, $2, $3)`,
@@ -293,12 +293,12 @@ export class EcommerceController {
       if (req.files) {
         if (req.files.hero_img && req.files.hero_img.length > 0) {
           updateQuery += `, hero_img = $${paramCount}`;
-          params.push(`/uploads/${req.files.hero_img[0].filename}`);
+          params.push(req.files.hero_img[0].path);
           paramCount++;
         }
         if (req.files.promo_img && req.files.promo_img.length > 0) {
           updateQuery += `, promo_img = $${paramCount}`;
-          params.push(`/uploads/${req.files.promo_img[0].filename}`);
+          params.push(req.files.promo_img[0].path);
           paramCount++;
         }
       }
