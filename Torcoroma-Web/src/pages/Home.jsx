@@ -70,7 +70,7 @@ export default function Home() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-4 loading-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 loading-grid">
             {[1, 2, 3, 4].map(i => <div key={i} className="skeleton-card"></div>)}
           </div>
         ) : destacados.length === 0 ? (
@@ -78,7 +78,7 @@ export default function Home() {
             No hay productos destacados por el momento.
           </div>
         ) : (
-          <div className="grid grid-cols-4 products-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 products-grid">
             {destacados.map(prod => (
               <Link to={`/producto/${prod.id_modelo}?color=${encodeURIComponent(prod.color_nombre)}`} key={`${prod.id_modelo}-${prod.color_nombre}`} className="product-card">
                 <div className="product-image-container">
