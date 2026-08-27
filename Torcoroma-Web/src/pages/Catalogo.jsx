@@ -1,0 +1,84 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { Star } from 'lucide-react';
+import './Catalogo.css';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
+export default function Catalogo() {
+  const { categoria } = useParams();
+  const [productos, setProductos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProductos = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_URL}/api/ecommerce/productos`);
+        if (res.ok) {
+          const data = await res.json();
+          // Filtrar por categoría si no es la vista general
+          let filtrados = data;
+          if (categoria) {
+            filtrados = data.filter(p => p.categoria_nombre?.toLowerCase() === categoria.toLowerCase());
+          }
+          setProductos(filtrados);
+        }
+      } catch (error) {
+        console.error("Error al cargar el catálogo", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProductos();
+  }, [categoria]);
+
+  return (
+    <div className="catalogo-page container section-padding mt-20">
+      <div className="catalogo-header">
+        <h1 className="catalogo-title">
+          Catálogo {categoria ? `- ${categoria.charAt(0).toUpperCase() + categoria.slice(1)}` : 'Completo'}
+        </h1>
+        <p className="catalogo-subtitle">Descubre nuestra exclusiva selección de calzado.</p>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-4 loading-grid">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <div key={i} className="skeleton-card"></div>)}
+        </div>
+      ) : productos.length === 0 ? (
+        <div className="no-products">
+          No hay productos disponibles en esta categoría por ahora.
+        </div>
+      ) : (
+        <div className="grid grid-cols-4 products-grid">
+          {productos.map(prod => (
+            <Link to={`/producto/${prod.id_modelo}?color=${encodeURIComponent(prod.color_nombre)}`} key={`${prod.id_modelo}-${prod.color_nombre}`} className="product-card">
+              <div className="product-image-container">
+                {prod.imagen_principal ? (
+                  <img src={`${API_URL}${prod.imagen_principal}`} alt={prod.modelo_nombre} className="product-image" />
+                ) : (
+                  <div className="image-placeholder">Sin Foto</div>
+                )}
+                {prod.precio_oferta && <div className="sale-badge">OFERTA</div>}
+                <button className="wishlist-btn" onClick={(e) => e.preventDefault()}><Star className="w-4 h-4" /></button>
+              </div>
+              <div className="product-info">
+                <span className="product-category">{prod.categoria_nombre || 'Novedad'}</span>
+                <h3 className="product-name">{prod.titulo_web || prod.modelo_nombre}</h3>
+                <span className="product-color text-xs text-gray-500 uppercase block mb-1">{prod.color_nombre}</span>
+                <div className="product-price">
+                  {prod.precio_oferta ? (
+                    <span className="price-sale">${Number(prod.precio_oferta).toLocaleString('es-CO')}</span>
+                  ) : (
+                    <span className="price-regular">${Number(prod.precio_venta || 0).toLocaleString('es-CO')}</span>
+                  )}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

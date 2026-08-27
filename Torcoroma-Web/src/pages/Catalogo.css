@@ -1,0 +1,24 @@
+.catalogo-page {
+  min-height: 80vh;
+}
+
+.catalogo-header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.catalogo-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.catalogo-subtitle {
+  color: var(--color-text-light);
+  font-size: 1.125rem;
+}
+
+.mt-20 {
+  margin-top: 5rem;
+}
