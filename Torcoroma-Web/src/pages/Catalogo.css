@@ -22,3 +22,10 @@
 .mt-20 {
   margin-top: 5rem;
 }
+
+@media (max-width: 768px) {
+  .catalogo-header { margin-bottom: 2rem; }
+  .catalogo-title { font-size: 1.75rem; }
+  .catalogo-subtitle { font-size: 1rem; }
+  .mt-20 { margin-top: 4rem; }
+}

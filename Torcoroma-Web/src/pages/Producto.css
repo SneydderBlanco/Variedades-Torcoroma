@@ -9,6 +9,24 @@
     grid-template-columns: 1fr;
     gap: 2rem;
   }
+  .main-image-container {
+    height: 400px !important;
+  }
+  .producto-title {
+    font-size: 2rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-image-container {
+    height: 300px !important;
+  }
+  .producto-title {
+    font-size: 1.5rem !important;
+  }
+  .size-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
 }
 
 /* GALLERY */
