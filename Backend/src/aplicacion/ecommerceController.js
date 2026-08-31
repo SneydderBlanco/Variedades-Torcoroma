@@ -204,12 +204,13 @@ export class EcommerceController {
         INSERT INTO ecommerce_producto_web 
           (id_modelo, color_nombre, id_categoria, titulo_web, descripcion, precio_web, precio_oferta, destacado, activo_web)
         VALUES 
-          ($1, $2, $3, $4, $5, $6, $7, $8)
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         ON CONFLICT (id_modelo, color_nombre) 
         DO UPDATE SET 
           id_categoria = EXCLUDED.id_categoria,
           titulo_web = EXCLUDED.titulo_web,
           descripcion = EXCLUDED.descripcion,
+          precio_web = EXCLUDED.precio_web,
           precio_oferta = EXCLUDED.precio_oferta,
           destacado = EXCLUDED.destacado,
           activo_web = EXCLUDED.activo_web
@@ -220,7 +221,8 @@ export class EcommerceController {
         color,
         id_categoria || null, 
         titulo_web || '', 
-        descripcion || '', 
+        descripcion || '',
+        precio_web || 0,
         precio_oferta || null, 
         destacado || false, 
         activo_web || false
