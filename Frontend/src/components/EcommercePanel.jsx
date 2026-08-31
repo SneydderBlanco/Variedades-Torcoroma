@@ -321,7 +321,7 @@ export default function EcommercePanel() {
       </div>
 
       {/* CONTENT */}
-      <div className="flex-grow flex flex-col xl:flex-row min-h-[600px] xl:h-[calc(100vh-250px)]">
+      <div className="flex-grow flex flex-col xl:flex-row h-auto xl:h-[calc(100vh-250px)]">
         
         {/* LISTA DE PRODUCTOS */}
         <div className="w-full xl:w-2/3 xl:h-full h-[500px] border-r border-gray-150 overflow-y-auto p-4 bg-gray-50/30">
@@ -385,7 +385,7 @@ export default function EcommercePanel() {
         </div>
 
         {/* PANEL DE EDICIÓN */}
-        <div className="w-full xl:w-1/3 xl:h-full bg-white p-6 overflow-y-auto shadow-inner">
+        <div className="w-full xl:w-1/3 h-auto xl:h-full bg-white p-6 overflow-visible xl:overflow-y-auto shadow-inner">
           {!editingProd ? (
             <div className="h-full flex flex-col items-center justify-center text-center opacity-50 space-y-4">
               <Globe className="w-20 h-20 text-gray-300" />
