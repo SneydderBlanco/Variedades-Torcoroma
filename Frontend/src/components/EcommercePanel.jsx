@@ -283,17 +283,17 @@ export default function EcommercePanel() {
   }, {}));
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 flex flex-col h-full overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 flex flex-col xl:h-full overflow-y-auto xl:overflow-hidden">
       {/* HEADER */}
-      <div className="p-6 border-b border-gray-150 flex flex-col md:flex-row justify-between items-center bg-gray-50/50 gap-4">
+      <div className="p-6 border-b border-gray-150 flex flex-col xl:flex-row justify-between items-center bg-gray-50/50 gap-4">
         <div>
           <h2 className="text-xl font-black text-torcoroma-dark flex items-center gap-2">
             <Globe className="text-torcoroma-gold w-6 h-6" /> Gestor Tienda Virtual
           </h2>
           <p className="text-xs text-gray-500 font-medium mt-1">Configura cómo se ven tus zapatos en internet.</p>
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="relative flex-grow md:w-64">
+        <div className="flex items-center gap-3 w-full xl:w-auto">
+          <div className="relative flex-grow xl:w-64">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
             <input
               type="text"
@@ -321,16 +321,16 @@ export default function EcommercePanel() {
       </div>
 
       {/* CONTENT */}
-      <div className="flex-grow flex flex-col md:flex-row h-[calc(100vh-250px)]">
+      <div className="flex-grow flex flex-col xl:flex-row min-h-[600px] xl:h-[calc(100vh-250px)]">
         
         {/* LISTA DE PRODUCTOS */}
-        <div className="w-full md:w-1/2 lg:w-2/3 border-r border-gray-150 overflow-y-auto p-4 bg-gray-50/30">
+        <div className="w-full xl:w-2/3 xl:h-full h-[500px] border-r border-gray-150 overflow-y-auto p-4 bg-gray-50/30">
           {loading ? (
             <div className="animate-pulse flex flex-col gap-3">
               {[1,2,3,4].map(i => <div key={i} className="h-16 bg-gray-200 rounded-xl"></div>)}
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredProducts.map(prod => {
                 const isSelected = prod.isDraft 
                   ? editingProd?.draftId === prod.draftId 
@@ -385,7 +385,7 @@ export default function EcommercePanel() {
         </div>
 
         {/* PANEL DE EDICIÓN */}
-        <div className="w-full md:w-1/2 lg:w-1/3 bg-white p-6 overflow-y-auto shadow-inner">
+        <div className="w-full xl:w-1/3 xl:h-full bg-white p-6 overflow-y-auto shadow-inner">
           {!editingProd ? (
             <div className="h-full flex flex-col items-center justify-center text-center opacity-50 space-y-4">
               <Globe className="w-20 h-20 text-gray-300" />
