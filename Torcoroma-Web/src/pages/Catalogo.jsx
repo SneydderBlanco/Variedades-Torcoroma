@@ -66,18 +66,18 @@ export default function Catalogo() {
                 <button className="wishlist-btn" onClick={(e) => e.preventDefault()}><Star className="w-4 h-4" /></button>
               </div>
               <div className="product-info">
-                <span className="product-category">{prod.categoria_nombre || 'Novedad'}</span>
-                <h3 className="product-name">{prod.titulo_web || prod.modelo_nombre}</h3>
-                <span className="product-color text-xs text-gray-500 uppercase block mb-1">{prod.color_nombre}</span>
-                <div className="product-price">
-                  {prod.precio_oferta ? (
-                    <span className="price-sale">${Number(prod.precio_oferta).toLocaleString('es-CO')}</span>
-                  ) : (
-                    <span className="price-regular">${Number(prod.precio_venta || 0).toLocaleString('es-CO')}</span>
-                  )}
+                  <div className="product-price-top">
+                    {prod.precio_oferta ? (
+                      <span className="price-sale-top">${Number(prod.precio_oferta).toLocaleString('es-CO')}</span>
+                    ) : (
+                      <span className="price-regular-top">${Number(prod.precio_venta || 0).toLocaleString('es-CO')}</span>
+                    )}
+                  </div>
+                  <h3 className="product-name-clean">{prod.titulo_web || prod.modelo_nombre}</h3>
+                  <span className="product-category-clean">{prod.categoria_nombre || 'Novedad'}</span>
+                  <span className="product-color-clean">{prod.color_nombre}</span>
                 </div>
-              </div>
-            </Link>
+              </Link>
           ))}
         </div>
       )}
