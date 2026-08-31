@@ -89,7 +89,7 @@ export default function Producto() {
           <div className="main-image-container">
             {imagenesMostrar.length > 0 ? (
               <>
-                <img src={`${API_URL}${imagenesMostrar[currentImageIdx]}`} alt={producto.titulo_web} className="main-image" />
+                <img src={getImgUrl(imagenesMostrar[currentImageIdx])} alt={producto.titulo_web} className="main-image" />
                 {imagenesMostrar.length > 1 && (
                   <>
                     <button className="gallery-btn prev" onClick={prevImage}><ChevronLeft /></button>
@@ -111,7 +111,7 @@ export default function Producto() {
                   className={`thumbnail ${idx === currentImageIdx ? 'active' : ''}`}
                   onClick={() => setCurrentImageIdx(idx)}
                 >
-                  <img src={`${API_URL}${img}`} alt="thumbnail" />
+                  <img src={getImgUrl(img)} alt="thumbnail" />
                 </div>
               ))}
             </div>
