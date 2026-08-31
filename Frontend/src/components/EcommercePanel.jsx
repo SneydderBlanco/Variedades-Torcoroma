@@ -324,7 +324,7 @@ export default function EcommercePanel() {
       <div className="flex-grow flex flex-col xl:flex-row min-h-0 overflow-y-auto xl:overflow-hidden">
         
         {/* LISTA DE PRODUCTOS */}
-        <div className="w-full xl:w-2/3 h-auto xl:h-full min-h-[400px] border-r border-gray-150 overflow-y-auto p-4 bg-gray-50/30">
+        <div className="w-full xl:w-2/3 h-auto xl:h-full min-h-[400px] xl:min-h-0 border-r border-gray-150 overflow-y-auto p-4 bg-gray-50/30">
           {loading ? (
             <div className="animate-pulse flex flex-col gap-3">
               {[1,2,3,4].map(i => <div key={i} className="h-16 bg-gray-200 rounded-xl"></div>)}
@@ -385,7 +385,7 @@ export default function EcommercePanel() {
         </div>
 
         {/* PANEL DE EDICIÓN */}
-        <div className="w-full xl:w-1/3 h-auto xl:h-full min-h-[500px] bg-white p-6 overflow-y-auto shadow-inner">
+        <div className="w-full xl:w-1/3 h-auto xl:h-full min-h-[500px] xl:min-h-0 bg-white p-6 overflow-y-auto shadow-inner">
           {!editingProd ? (
             <div className="h-full flex flex-col items-center justify-center text-center opacity-50 space-y-4">
               <Globe className="w-20 h-20 text-gray-300" />
