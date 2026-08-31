@@ -55,7 +55,7 @@ export class EcommerceController {
       // 1. Obtener datos base
       const query = `
         SELECT 
-          m.id_modelo, m.nombre AS modelo_nombre, m.precio_minimo_venta AS precio_venta, ew.color_nombre,
+          m.id_modelo, m.nombre AS modelo_nombre, ew.precio_web AS precio_venta, ew.color_nombre,
           ew.id_categoria, c.nombre AS categoria_nombre,
           ew.titulo_web, ew.descripcion, ew.precio_oferta, ew.destacado
         FROM ecommerce_producto_web ew
@@ -108,7 +108,7 @@ export class EcommerceController {
         SELECT 
           m.id_modelo, m.nombre AS modelo_nombre, ew.color_nombre,
           ew.id_categoria, c.nombre AS categoria_nombre,
-          ew.titulo_web, ew.descripcion, ew.precio_oferta, ew.destacado, ew.activo_web,
+          ew.titulo_web, ew.descripcion, ew.precio_web, ew.precio_oferta, ew.destacado, ew.activo_web,
           (SELECT COUNT(*) FROM ecommerce_imagen ei WHERE ei.id_modelo = m.id_modelo AND (ei.color_nombre = ew.color_nombre OR ei.color_nombre IS NULL)) AS cant_imagenes
         FROM ecommerce_producto_web ew
         JOIN modelo m ON ew.id_modelo = m.id_modelo
@@ -198,11 +198,11 @@ export class EcommerceController {
   async updateProductoWeb(req, res) {
     try {
       const { id_modelo } = req.params;
-      const { color, id_categoria, titulo_web, descripcion, precio_oferta, destacado, activo_web } = req.body;
+      const { color, id_categoria, titulo_web, descripcion, precio_web, precio_oferta, destacado, activo_web } = req.body;
       
       const query = `
         INSERT INTO ecommerce_producto_web 
-          (id_modelo, color_nombre, id_categoria, titulo_web, descripcion, precio_oferta, destacado, activo_web)
+          (id_modelo, color_nombre, id_categoria, titulo_web, descripcion, precio_web, precio_oferta, destacado, activo_web)
         VALUES 
           ($1, $2, $3, $4, $5, $6, $7, $8)
         ON CONFLICT (id_modelo, color_nombre) 

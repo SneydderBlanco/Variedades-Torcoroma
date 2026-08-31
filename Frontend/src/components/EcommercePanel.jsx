@@ -21,6 +21,7 @@ export default function EcommercePanel() {
   const [editingProd, setEditingProd] = useState(null);
   const [selectedCategoria, setSelectedCategoria] = useState('');
   const [tituloWeb, setTituloWeb] = useState('');
+  const [precioWeb, setPrecioWeb] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [precioOferta, setPrecioOferta] = useState('');
   const [isOfertaActiva, setIsOfertaActiva] = useState(false);
@@ -94,6 +95,7 @@ export default function EcommercePanel() {
       color_nombre: '',
       id_categoria: '',
       titulo_web: '',
+      precio_web: '',
       descripcion: '',
       precio_oferta: null,
       destacado: false,
@@ -131,6 +133,7 @@ export default function EcommercePanel() {
     setEditingProd(prod);
     setSelectedCategoria(prod.id_categoria || '');
     setTituloWeb(prod.titulo_web || '');
+    setPrecioWeb(prod.precio_web || '');
     setDescripcion(prod.descripcion || '');
     setIsOfertaActiva(prod.precio_oferta != null);
     setPrecioOferta(prod.precio_oferta || '');
@@ -198,6 +201,7 @@ export default function EcommercePanel() {
           color: selectedColorUI,
           id_categoria: selectedCategoria,
           titulo_web: tituloWeb,
+          precio_web: precioWeb,
           descripcion,
           precio_oferta: isOfertaActiva ? precioOferta : null,
           destacado: false,
@@ -443,11 +447,17 @@ export default function EcommercePanel() {
               </div>
 
               {/* SECCIÓN CONFIGURACIÓN */}
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-black text-gray-600 mb-1 block">TÍTULO EN LA WEB</label>
-                  <input type="text" value={tituloWeb} onChange={e=>setTituloWeb(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold outline-none focus:border-torcoroma-gold" />
-                </div>
+                              <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-black text-gray-600 mb-1 block">TÍTULO EN LA WEB</label>
+                      <input type="text" value={tituloWeb} onChange={e=>setTituloWeb(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold outline-none focus:border-torcoroma-gold" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-black text-gray-600 mb-1 block">PRECIO WEB</label>
+                      <input type="number" value={precioWeb} onChange={e=>setPrecioWeb(e.target.value)} placeholder="Ej. 150000" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold outline-none focus:border-torcoroma-gold" />
+                    </div>
+                  </div>
                 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
