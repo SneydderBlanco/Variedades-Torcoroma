@@ -421,7 +421,7 @@ export default function App() {
                 <UsuariosPanel onShowMessage={(msg) => alert(msg)} />
               </div>
             ) : currentView === 'ECOMMERCE' && user?.rol === 'ADMIN' ? (
-              <div className="max-w-7xl mx-auto xl:h-full">
+              <div className="max-w-7xl mx-auto h-full">
                 <EcommercePanel />
               </div>
             ) : (
