@@ -22,7 +22,16 @@ export default function Catalogo() {
           // Filtrar por categoría si no es la vista general
           let filtrados = data;
           if (categoria) {
-            filtrados = data.filter(p => p.categoria_nombre?.toLowerCase() === categoria.toLowerCase());
+            filtrados = data.filter(p => {
+              const catName = p.categoria_nombre?.toLowerCase() || '';
+              const routeCat = categoria.toLowerCase();
+              
+              if ((routeCat === 'hombre' || routeCat === 'mujer') && catName === 'unisex') {
+                return true;
+              }
+              
+              return catName === routeCat;
+            });
           }
           setProductos(filtrados);
         }
