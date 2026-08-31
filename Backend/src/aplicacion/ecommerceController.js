@@ -16,7 +16,7 @@ export class EcommerceController {
     try {
       const query = `
         SELECT 
-          m.id_modelo, m.nombre AS modelo_nombre, ew.color_nombre,
+          m.id_modelo, m.nombre AS modelo_nombre, ew.precio_web AS precio_venta, ew.color_nombre,
           ew.id_categoria, c.nombre AS categoria_nombre,
           ew.titulo_web, ew.descripcion, ew.precio_oferta, ew.destacado
         FROM ecommerce_producto_web ew
@@ -106,7 +106,7 @@ export class EcommerceController {
       // Devolver modelos y sus colores que ya tengan un perfil creado en la web
       const query = `
         SELECT 
-          m.id_modelo, m.nombre AS modelo_nombre, ew.color_nombre,
+          m.id_modelo, m.nombre AS modelo_nombre, ew.precio_web AS precio_venta, ew.color_nombre,
           ew.id_categoria, c.nombre AS categoria_nombre,
           ew.titulo_web, ew.descripcion, ew.precio_web, ew.precio_oferta, ew.destacado, ew.activo_web,
           (SELECT COUNT(*) FROM ecommerce_imagen ei WHERE ei.id_modelo = m.id_modelo AND (ei.color_nombre = ew.color_nombre OR ei.color_nombre IS NULL)) AS cant_imagenes
