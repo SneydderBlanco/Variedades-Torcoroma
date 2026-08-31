@@ -118,13 +118,12 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 1rem;
 }
 
 .product-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   transition: transform 0.5s ease;
 }
 
