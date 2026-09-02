@@ -102,29 +102,4 @@ ul {
   .grid-cols-4 { grid-template-columns: repeat(3, 1fr); }
 }
 
-@media (max-width: 768px) {
-  .grid-cols-3, .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
-}
 
-@media (max-width: 480px) {
-  .grid-cols-2, .grid-cols-3, .grid-cols-4 { grid-template-columns: 1fr; }
-}
-
-/* Grid Utilities for Products */
-.products-grid, .loading-grid {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: 1.5rem;
-}
-
-@media (min-width: 640px) {
-  .products-grid, .loading-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .products-grid, .loading-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
