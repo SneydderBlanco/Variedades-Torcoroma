@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { ShoppingBag, Check, ChevronLeft, ChevronRight, Info, Heart } from 'lucide-react';
+import { ShoppingBag, Check, ChevronLeft, ChevronRight, Info, Heart, X, Maximize2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import './Producto.css';
 
@@ -18,6 +18,60 @@ export default function Producto() {
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedTalla, setSelectedTalla] = useState('');
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  // Distancia mínima en píxeles para reconocer un deslizamiento (swipe)
+  const minSwipeDistance = 40;
+
+  const onTouchStartHandler = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMoveHandler = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEndHandler = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      nextImage();
+    } else if (isRightSwipe) {
+      prevImage();
+    }
+  };
+
+  // Bloquear scroll de la página y permitir navegación con teclado en el Modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isModalOpen) return;
+      if (e.key === 'Escape') setIsModalOpen(false);
+      if (e.key === 'ArrowRight') nextImage();
+      if (e.key === 'ArrowLeft') prevImage();
+    };
+
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isModalOpen, currentImageIdx]);
+
+  // Resetear índice al cambiar de color
+  useEffect(() => {
+    setCurrentImageIdx(0);
+  }, [selectedColor]);
 
   useEffect(() => {
     const fetchProducto = async () => {
@@ -84,35 +138,100 @@ export default function Producto() {
     <div className="producto-page container mt-20 section-padding">
       <div className="producto-layout">
         
-        {/* GALERÍA DE IMÁGENES */}
-        <div className="producto-gallery">
-          <div className="main-image-container">
+        {/* GALERÍA DE IMÁGENES RESPONSIVA CON SWIPE Y ZOOM */}
+        <div className="flex flex-col gap-3 w-full">
+          {/* Contenedor Principal de la Imagen */}
+          <div 
+            className="relative w-full aspect-square sm:aspect-[4/3] md:aspect-square max-h-[500px] bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden flex items-center justify-center select-none cursor-zoom-in group shadow-xs"
+            onTouchStart={onTouchStartHandler}
+            onTouchMove={onTouchMoveHandler}
+            onTouchEnd={onTouchEndHandler}
+            onClick={() => imagenesMostrar.length > 0 && setIsModalOpen(true)}
+          >
             {imagenesMostrar.length > 0 ? (
               <>
-                <img src={getImgUrl(imagenesMostrar[currentImageIdx])} alt={producto.titulo_web} className="main-image" />
+                <img 
+                  src={getImgUrl(imagenesMostrar[currentImageIdx])} 
+                  alt={producto.titulo_web || producto.modelo_nombre} 
+                  className="w-full h-full object-contain p-2 sm:p-4 transition-transform duration-300 group-hover:scale-[1.02]" 
+                />
+
+                {/* Botón flotante para abrir Modal / Zoom */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
+                  className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer opacity-90 hover:opacity-100 z-10"
+                  title="Ver en pantalla completa"
+                  aria-label="Ampliar imagen"
+                >
+                  <Maximize2 className="w-4 h-4" />
+                </button>
+
+                {/* Flechas de navegación (si hay más de 1 imagen) */}
                 {imagenesMostrar.length > 1 && (
                   <>
-                    <button className="gallery-btn prev" onClick={prevImage}><ChevronLeft /></button>
-                    <button className="gallery-btn next" onClick={nextImage}><ChevronRight /></button>
+                    <button 
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer active:scale-95 z-10"
+                      onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                      aria-label="Imagen anterior"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button 
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer active:scale-95 z-10"
+                      onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                      aria-label="Siguiente imagen"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
                   </>
+                )}
+
+                {/* Indicadores de paginación táctil (Dots para móvil) */}
+                {imagenesMostrar.length > 1 && (
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/20 backdrop-blur-xs z-10">
+                    {imagenesMostrar.map((_, dotIdx) => (
+                      <button
+                        key={dotIdx}
+                        onClick={(e) => { e.stopPropagation(); setCurrentImageIdx(dotIdx); }}
+                        className={`transition-all duration-300 rounded-full ${
+                          dotIdx === currentImageIdx 
+                            ? 'w-4 h-1.5 bg-white' 
+                            : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
+                        }`}
+                        aria-label={`Ir a imagen ${dotIdx + 1}`}
+                      />
+                    ))}
+                  </div>
                 )}
               </>
             ) : (
-              <div className="image-placeholder">Sin Foto</div>
+              <div className="text-gray-400 text-sm font-semibold uppercase">Sin Foto</div>
             )}
-            {producto.precio_oferta && <div className="sale-badge">OFERTA</div>}
+
+            {/* Badge de Oferta */}
+            {producto.precio_oferta && (
+              <span className="absolute top-3 left-3 bg-red-600 text-white text-[10px] sm:text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm z-10">
+                OFERTA
+              </span>
+            )}
           </div>
           
+          {/* Miniaturas inferiores */}
           {imagenesMostrar.length > 1 && (
-            <div className="thumbnails">
+            <div className="flex gap-2.5 sm:gap-3 overflow-x-auto py-1 scrollbar-none">
               {imagenesMostrar.map((img, idx) => (
-                <div 
+                <button 
                   key={idx} 
-                  className={`thumbnail ${idx === currentImageIdx ? 'active' : ''}`}
+                  className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-50 border-2 overflow-hidden flex-shrink-0 cursor-pointer transition-all duration-200 p-1 flex items-center justify-center ${
+                    idx === currentImageIdx 
+                      ? 'border-gray-900 shadow-sm ring-1 ring-gray-900 opacity-100 scale-102' 
+                      : 'border-transparent opacity-60 hover:opacity-100'
+                  }`}
                   onClick={() => setCurrentImageIdx(idx)}
+                  aria-label={`Ver miniatura ${idx + 1}`}
                 >
-                  <img src={getImgUrl(img)} alt="thumbnail" />
-                </div>
+                  <img src={getImgUrl(img)} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-contain" />
+                </button>
               ))}
             </div>
           )}
@@ -200,6 +319,86 @@ export default function Producto() {
         </div>
 
       </div>
+
+      {/* LIGHTBOX / MODAL DE AMPLIACIÓN FULLSCREEN */}
+      {isModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between select-none"
+          onClick={() => setIsModalOpen(false)}
+          onTouchStart={onTouchStartHandler}
+          onTouchMove={onTouchMoveHandler}
+          onTouchEnd={onTouchEndHandler}
+        >
+          {/* Barra superior del Modal */}
+          <div className="w-full px-4 sm:px-8 py-4 flex items-center justify-between text-white z-20">
+            <span className="text-xs sm:text-sm font-bold tracking-widest uppercase bg-white/10 px-3 py-1 rounded-full backdrop-blur-xs">
+              {currentImageIdx + 1} / {imagenesMostrar.length}
+            </span>
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors backdrop-blur-xs"
+              aria-label="Cerrar modal"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Contenedor central con Imagen Completa */}
+          <div 
+            className="relative flex-1 flex items-center justify-center p-2 sm:p-6 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {imagenesMostrar.length > 0 && (
+              <img 
+                src={getImgUrl(imagenesMostrar[currentImageIdx])} 
+                alt={producto.titulo_web || producto.modelo_nombre} 
+                className="max-h-[82vh] max-w-[95vw] object-contain rounded-lg transition-all duration-300 touch-pinch-zoom shadow-2xl" 
+              />
+            )}
+
+            {/* Flechas de navegación en el Modal */}
+            {imagenesMostrar.length > 1 && (
+              <>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer z-20 active:scale-95"
+                  aria-label="Imagen anterior"
+                >
+                  <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
+                </button>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer z-20 active:scale-95"
+                  aria-label="Siguiente imagen"
+                >
+                  <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Tira inferior de miniaturas en el Modal */}
+          {imagenesMostrar.length > 1 && (
+            <div 
+              className="w-full px-4 py-4 flex items-center justify-center gap-2 overflow-x-auto z-20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {imagenesMostrar.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentImageIdx(idx)}
+                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-white/5 border-2 overflow-hidden flex-shrink-0 cursor-pointer transition-all p-1 ${
+                    idx === currentImageIdx ? 'border-white opacity-100 scale-110' : 'border-transparent opacity-40 hover:opacity-75'
+                  }`}
+                  aria-label={`Miniatura ${idx + 1}`}
+                >
+                  <img src={getImgUrl(img)} alt={`thumb-${idx}`} className="w-full h-full object-contain" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
