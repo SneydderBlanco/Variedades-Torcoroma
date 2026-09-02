@@ -70,6 +70,29 @@ app.get('/api/status', async (req, res) => {
   }
 });
 
+// Auto-migración al inicio para asegurar columnas requeridas en PostgreSQL/Neon
+const ensureDatabaseColumns = async () => {
+  try {
+    await pool.query(`
+      ALTER TABLE ecommerce_producto_web 
+      ADD COLUMN IF NOT EXISTS precio_web NUMERIC(12, 2) DEFAULT 0.00;
+    `);
+    console.log('✅ Base de datos: Columna precio_web asegurada en ecommerce_producto_web.');
+  } catch (err) {
+    console.error('⚠️ Error al asegurar columna precio_web:', err.message);
+  }
+};
+ensureDatabaseColumns();
+
+// Endpoint de versión
+app.get('/api/version', (req, res) => {
+  res.json({
+    version: '1.1.0',
+    features: ['precio_web_support', 'auto_migration'],
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Inicialización del servidor
 app.listen(PORT, () => {
   console.log(`=== Servidor de Variedades Torcoroma ===`);

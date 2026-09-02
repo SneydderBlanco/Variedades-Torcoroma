@@ -130,10 +130,10 @@ export default function Producto() {
             {producto.precio_oferta ? (
               <>
                 <span className="price-sale">${Number(producto.precio_oferta).toLocaleString('es-CO')}</span>
-                <span className="price-old">${Number(producto.precio_venta).toLocaleString('es-CO')}</span>
+                <span className="price-old">${Number(producto.precio_venta || producto.precio_web || 0).toLocaleString('es-CO')}</span>
               </>
             ) : (
-              <span className="price-regular">${Number(producto.precio_venta).toLocaleString('es-CO')}</span>
+              <span className="price-regular">${Number(producto.precio_venta || producto.precio_web || 0).toLocaleString('es-CO')}</span>
             )}
           </div>
 

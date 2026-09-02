@@ -16,7 +16,13 @@ export class EcommerceController {
     try {
       const query = `
         SELECT 
-          m.id_modelo, m.nombre AS modelo_nombre, ew.precio_web AS precio_venta, ew.color_nombre,
+          m.id_modelo, m.nombre AS modelo_nombre,
+          CASE 
+            WHEN ew.precio_web IS NOT NULL AND ew.precio_web > 0 THEN ew.precio_web 
+            ELSE COALESCE(m.precio_minimo_venta, 0) 
+          END AS precio_venta,
+          ew.precio_web,
+          ew.color_nombre,
           ew.id_categoria, c.nombre AS categoria_nombre,
           ew.titulo_web, ew.descripcion, ew.precio_oferta, ew.destacado
         FROM ecommerce_producto_web ew
@@ -55,7 +61,13 @@ export class EcommerceController {
       // 1. Obtener datos base
       const query = `
         SELECT 
-          m.id_modelo, m.nombre AS modelo_nombre, ew.precio_web AS precio_venta, ew.color_nombre,
+          m.id_modelo, m.nombre AS modelo_nombre,
+          CASE 
+            WHEN ew.precio_web IS NOT NULL AND ew.precio_web > 0 THEN ew.precio_web 
+            ELSE COALESCE(m.precio_minimo_venta, 0) 
+          END AS precio_venta,
+          ew.precio_web,
+          ew.color_nombre,
           ew.id_categoria, c.nombre AS categoria_nombre,
           ew.titulo_web, ew.descripcion, ew.precio_oferta, ew.destacado
         FROM ecommerce_producto_web ew
@@ -106,9 +118,15 @@ export class EcommerceController {
       // Devolver modelos y sus colores que ya tengan un perfil creado en la web
       const query = `
         SELECT 
-          m.id_modelo, m.nombre AS modelo_nombre, ew.precio_web AS precio_venta, ew.color_nombre,
+          m.id_modelo, m.nombre AS modelo_nombre,
+          CASE 
+            WHEN ew.precio_web IS NOT NULL AND ew.precio_web > 0 THEN ew.precio_web 
+            ELSE COALESCE(m.precio_minimo_venta, 0) 
+          END AS precio_venta,
+          COALESCE(NULLIF(ew.precio_web, 0), m.precio_minimo_venta, 0) AS precio_web,
+          ew.color_nombre,
           ew.id_categoria, c.nombre AS categoria_nombre,
-          ew.titulo_web, ew.descripcion, ew.precio_web, ew.precio_oferta, ew.destacado, ew.activo_web,
+          ew.titulo_web, ew.descripcion, ew.precio_oferta, ew.destacado, ew.activo_web,
           (SELECT COUNT(*) FROM ecommerce_imagen ei WHERE ei.id_modelo = m.id_modelo AND (ei.color_nombre = ew.color_nombre OR ei.color_nombre IS NULL)) AS cant_imagenes
         FROM ecommerce_producto_web ew
         JOIN modelo m ON ew.id_modelo = m.id_modelo
@@ -128,7 +146,7 @@ export class EcommerceController {
     try {
       // Combinaciones de Modelo + Color que NO están en la tabla ecommerce_producto_web
       const query = `
-        SELECT DISTINCT m.id_modelo, m.nombre AS modelo_nombre, v.color, p.nombre AS proveedor_nombre
+        SELECT DISTINCT m.id_modelo, m.nombre AS modelo_nombre, m.precio_minimo_venta, v.color, p.nombre AS proveedor_nombre
         FROM modelo m
         JOIN variante_zapato v ON m.id_modelo = v.id_modelo
         LEFT JOIN proveedor p ON m.id_proveedor_aliado = p.id_proveedor::varchar
@@ -200,6 +218,14 @@ export class EcommerceController {
       const { id_modelo } = req.params;
       const { color, id_categoria, titulo_web, descripcion, precio_web, precio_oferta, destacado, activo_web } = req.body;
       
+      const numPrecioWeb = (precio_web !== '' && precio_web !== null && !isNaN(Number(precio_web)))
+        ? Number(precio_web)
+        : null;
+
+      const numPrecioOferta = (precio_oferta !== '' && precio_oferta !== null && !isNaN(Number(precio_oferta)))
+        ? Number(precio_oferta)
+        : null;
+
       const query = `
         INSERT INTO ecommerce_producto_web 
           (id_modelo, color_nombre, id_categoria, titulo_web, descripcion, precio_web, precio_oferta, destacado, activo_web)
@@ -210,7 +236,7 @@ export class EcommerceController {
           id_categoria = EXCLUDED.id_categoria,
           titulo_web = EXCLUDED.titulo_web,
           descripcion = EXCLUDED.descripcion,
-          precio_web = EXCLUDED.precio_web,
+          precio_web = COALESCE(EXCLUDED.precio_web, ecommerce_producto_web.precio_web, 0),
           precio_oferta = EXCLUDED.precio_oferta,
           destacado = EXCLUDED.destacado,
           activo_web = EXCLUDED.activo_web
@@ -222,8 +248,8 @@ export class EcommerceController {
         id_categoria || null, 
         titulo_web || '', 
         descripcion || '',
-        precio_web || 0,
-        precio_oferta || null, 
+        numPrecioWeb,
+        numPrecioOferta, 
         destacado || false, 
         activo_web || false
       ]);
@@ -231,7 +257,7 @@ export class EcommerceController {
       res.json({ message: 'Producto web actualizado' });
     } catch (error) {
       console.error('Error al actualizar producto web:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
     }
   }
 

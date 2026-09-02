@@ -79,7 +79,7 @@ export default function Catalogo() {
                     {prod.precio_oferta ? (
                       <span className="price-sale-top">${Number(prod.precio_oferta).toLocaleString('es-CO')}</span>
                     ) : (
-                      <span className="price-regular-top">${Number(prod.precio_venta || 0).toLocaleString('es-CO')}</span>
+                      <span className="price-regular-top">${Number(prod.precio_venta || prod.precio_web || 0).toLocaleString('es-CO')}</span>
                     )}
                   </div>
                   <h3 className="product-name-clean">{prod.titulo_web || prod.modelo_nombre}</h3>

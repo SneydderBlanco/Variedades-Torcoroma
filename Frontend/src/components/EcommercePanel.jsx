@@ -87,6 +87,9 @@ export default function EcommercePanel() {
   };
 
   const handleLoadModel = (modelo) => {
+    const defaultPrice = (modelo.precio_minimo_venta && Number(modelo.precio_minimo_venta) > 0)
+      ? modelo.precio_minimo_venta 
+      : '';
     const newDraft = {
       isDraft: true,
       draftId: Date.now() + Math.random(),
@@ -94,8 +97,9 @@ export default function EcommercePanel() {
       modelo_nombre: modelo.modelo_nombre,
       color_nombre: '',
       id_categoria: '',
-      titulo_web: '',
-      precio_web: '',
+      titulo_web: modelo.modelo_nombre || '',
+      precio_web: defaultPrice,
+      precio_venta: defaultPrice,
       descripcion: '',
       precio_oferta: null,
       destacado: false,
@@ -132,8 +136,14 @@ export default function EcommercePanel() {
   const handleEditClick = async (prod) => {
     setEditingProd(prod);
     setSelectedCategoria(prod.id_categoria || '');
-    setTituloWeb(prod.titulo_web || '');
-    setPrecioWeb(prod.precio_web || '');
+    setTituloWeb(prod.titulo_web || prod.modelo_nombre || '');
+    
+    // Si precio_web tiene valor numérico válido, úsalo; si no, toma precio_venta del modelo
+    const currentPrice = (prod.precio_web && Number(prod.precio_web) > 0) 
+      ? prod.precio_web 
+      : (prod.precio_venta && Number(prod.precio_venta) > 0 ? prod.precio_venta : '');
+    setPrecioWeb(currentPrice);
+    
     setDescripcion(prod.descripcion || '');
     setIsOfertaActiva(prod.precio_oferta != null);
     setPrecioOferta(prod.precio_oferta || '');
