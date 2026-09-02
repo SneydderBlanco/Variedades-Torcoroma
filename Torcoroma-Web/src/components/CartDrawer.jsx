@@ -1,33 +1,40 @@
 import React from 'react';
-import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, ShieldCheck, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import './CartDrawer.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
 
-
 export default function CartDrawer() {
-  const { isDrawerOpen, toggleDrawer, cart, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const { isDrawerOpen, toggleDrawer, cart, removeFromCart, updateQuantity, cartTotal, itemsCount } = useCart();
+
+  // Meta para envío gratis ($150.000 COP)
+  const FREE_SHIPPING_THRESHOLD = 150000;
+  const shippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - cartTotal);
+  const shippingProgress = Math.min(100, (cartTotal / FREE_SHIPPING_THRESHOLD) * 100);
 
   const handleWhatsAppCheckout = () => {
-    // 1. Número de WhatsApp de Torcoroma
     const phone = "573224613457"; 
     
-    // 2. Construir el mensaje
-    let message = `¡Hola Torcoroma! 👋 Quiero hacer este pedido:\n\n`;
+    let message = `¡Hola Variedades Torcoroma! 👋\n`;
+    message += `Quiero solicitar el siguiente pedido desde la tienda virtual:\n\n`;
+    message += `🛍️ *DETALLE DEL PEDIDO:*\n`;
     
     cart.forEach((item, index) => {
       message += `${index + 1}. *${item.nombre}*\n`;
-      message += `   Color: ${item.color} | Talla: ${item.talla}\n`;
-      message += `   Cantidad: ${item.cantidad} x $${Number(item.precio).toLocaleString('es-CO')}\n`;
-      message += `   Subtotal: $${Number(item.precio * item.cantidad).toLocaleString('es-CO')}\n\n`;
+      message += `   • Color: ${item.color} | Talla: ${item.talla}\n`;
+      message += `   • Cantidad: ${item.cantidad} x $${Number(item.precio).toLocaleString('es-CO')}\n`;
+      message += `   • Subtotal: $${Number(item.precio * item.cantidad).toLocaleString('es-CO')}\n\n`;
     });
     
-    message += `*TOTAL A PAGAR: $${Number(cartTotal).toLocaleString('es-CO')}*\n\n`;
-    message += `¿Me ayudan con los medios de pago y el envío?`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `💰 *TOTAL A PAGAR:* $${Number(cartTotal).toLocaleString('es-CO')}\n`;
+    if (cartTotal >= FREE_SHIPPING_THRESHOLD) {
+      message += `🚚 *ENVÍO:* ¡GRATIS! (Aplica en compras > $150.000)\n`;
+    }
+    message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+    message += `¿Me podrían confirmar disponibilidad y los métodos de pago disponibles para despacho? ¡Muchas gracias!`;
 
-    // 3. Crear el link y redirigir
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
     
@@ -36,61 +43,159 @@ export default function CartDrawer() {
 
   return (
     <>
-      <div className={`cart-overlay ${isDrawerOpen ? 'open' : ''}`} onClick={toggleDrawer}></div>
-      <div className={`cart-drawer ${isDrawerOpen ? 'open' : ''}`}>
-        <div className="cart-header">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="w-6 h-6" />
-            <h2>Tu Carrito</h2>
+      {/* Fondo Oscuro / Overlay con desenfoque */}
+      <div 
+        className={`fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300 ${
+          isDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={toggleDrawer}
+        aria-hidden="true"
+      />
+
+      {/* Sidebar / Offcanvas Lateral */}
+      <aside 
+        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
+          isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        {/* Cabecera del Carrito */}
+        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gray-900 text-[#F5C227] flex items-center justify-center">
+              <ShoppingBag className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-black text-gray-900 tracking-tight flex items-center gap-2">
+                TU CARRITO
+                {itemsCount > 0 && (
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                    {itemsCount} {itemsCount === 1 ? 'ítem' : 'ítems'}
+                  </span>
+                )}
+              </h2>
+            </div>
           </div>
-          <button className="close-btn" onClick={toggleDrawer}>
-            <X className="w-6 h-6" />
+          <button 
+            onClick={toggleDrawer}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 cursor-pointer"
+            aria-label="Cerrar carrito"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="cart-items">
+        {/* Barra de Envío Gratis */}
+        <div className="px-6 py-3 bg-gray-50 border-b border-gray-100 text-xs">
+          <div className="flex items-center justify-between font-semibold text-gray-700 mb-1.5">
+            <span className="flex items-center gap-1.5">
+              <Truck className="w-4 h-4 text-[#F5C227]" />
+              {cartTotal >= FREE_SHIPPING_THRESHOLD ? (
+                <span className="text-green-700 font-bold">¡Felicidades! Tienes Envío Gratis 🎉</span>
+              ) : (
+                <span>Te faltan <b className="text-gray-900">${Number(shippingRemaining).toLocaleString('es-CO')}</b> para Envío Gratis</span>
+              )}
+            </span>
+            <span className="text-gray-400 text-[11px] font-medium">{Math.round(shippingProgress)}%</span>
+          </div>
+          <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-[#F5C227] transition-all duration-500 rounded-full"
+              style={{ width: `${shippingProgress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Lista de Productos */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 divide-y divide-gray-100">
           {cart.length === 0 ? (
-            <div className="empty-cart">
-              <ShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
-              <p>Tu carrito está vacío</p>
-              <button className="btn btn-outline mt-4" onClick={toggleDrawer}>
+            <div className="h-full flex flex-col items-center justify-center text-center py-16 text-gray-400">
+              <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mb-4 text-gray-300">
+                <ShoppingBag className="w-10 h-10" />
+              </div>
+              <h3 className="text-base font-bold text-gray-800 mb-1">Tu carrito está vacío</h3>
+              <p className="text-xs text-gray-500 max-w-xs mb-6">
+                Descubre los mejores modelos de calzado urbano y añade tus favoritos.
+              </p>
+              <button 
+                onClick={toggleDrawer}
+                className="px-6 py-3 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg active:scale-95"
+              >
                 Explorar Catálogo
               </button>
             </div>
           ) : (
             cart.map((item, index) => (
-              <div key={`${item.id_modelo}-${item.color}-${item.talla}`} className="cart-item">
-                <div className="cart-item-img">
+              <div key={`${item.id_modelo}-${item.color}-${item.talla}`} className="py-4 first:pt-0 last:pb-0 flex gap-4">
+                {/* Miniatura del zapato */}
+                <div className="w-20 h-20 rounded-xl bg-gray-100 border border-gray-100 overflow-hidden flex-shrink-0 relative">
                   {item.imagen ? (
-                    <img src={getImgUrl(item.imagen)} alt={item.nombre} />
+                    <img 
+                      src={getImgUrl(item.imagen)} 
+                      alt={item.nombre} 
+                      className="w-full h-full object-cover" 
+                    />
                   ) : (
-                    <div className="img-placeholder">Sin Foto</div>
+                    <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400">
+                      Sin Foto
+                    </div>
                   )}
                 </div>
-                <div className="cart-item-info">
-                  <h4>{item.nombre}</h4>
-                  <p className="item-variant">{item.color} | Talla {item.talla}</p>
-                  <p className="item-price">${Number(item.precio).toLocaleString('es-CO')}</p>
-                  
-                  <div className="item-actions">
-                    <div className="qty-controls">
+
+                {/* Información del Ítem */}
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="text-sm font-bold text-gray-900 leading-snug line-clamp-1">
+                        {item.nombre}
+                      </h4>
+                      <button 
+                        onClick={() => removeFromCart(index)}
+                        className="text-gray-300 hover:text-red-500 p-1 rounded transition-colors cursor-pointer"
+                        title="Eliminar producto"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-600 uppercase">
+                        {item.color}
+                      </span>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-900">
+                        Talla {item.talla}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Acciones: Cantidad y Subtotal */}
+                  <div className="flex items-center justify-between mt-3">
+                    {/* Controles de Cantidad */}
+                    <div className="flex items-center border border-gray-200 rounded-lg bg-gray-50 overflow-hidden">
                       <button 
                         onClick={() => updateQuantity(index, item.cantidad - 1)}
                         disabled={item.cantidad <= 1}
+                        className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                        aria-label="Disminuir cantidad"
                       >
-                        <Minus className="w-4 h-4" />
+                        <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span>{item.cantidad}</span>
+                      <span className="w-8 text-center text-xs font-black text-gray-900 select-none">
+                        {item.cantidad}
+                      </span>
                       <button 
                         onClick={() => updateQuantity(index, item.cantidad + 1)}
                         disabled={item.cantidad >= item.maxStock}
+                        className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                        aria-label="Aumentar cantidad"
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <button className="remove-btn" onClick={() => removeFromCart(index)}>
-                      Eliminar
-                    </button>
+
+                    {/* Precio / Subtotal */}
+                    <span className="text-sm font-black text-gray-900">
+                      ${Number(item.precio * item.cantidad).toLocaleString('es-CO')}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -98,18 +203,46 @@ export default function CartDrawer() {
           )}
         </div>
 
+        {/* Footer y Checkout */}
         {cart.length > 0 && (
-          <div className="cart-footer">
-            <div className="cart-total">
-              <span>Total</span>
-              <span>${Number(cartTotal).toLocaleString('es-CO')}</span>
+          <div className="p-6 border-t border-gray-100 bg-white space-y-4 shadow-lg">
+            {/* Desglose de Precios */}
+            <div className="space-y-1.5 text-xs">
+              <div className="flex justify-between text-gray-500 font-medium">
+                <span>Subtotal</span>
+                <span className="text-gray-900 font-semibold">${Number(cartTotal).toLocaleString('es-CO')}</span>
+              </div>
+              <div className="flex justify-between text-gray-500 font-medium">
+                <span>Envío estimado</span>
+                <span className={cartTotal >= FREE_SHIPPING_THRESHOLD ? "text-green-600 font-bold" : "text-gray-600"}>
+                  {cartTotal >= FREE_SHIPPING_THRESHOLD ? "Gratis" : "Por calcular"}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-gray-100 flex justify-between items-baseline">
+                <span className="text-sm font-bold text-gray-900">Total estimado</span>
+                <span className="text-xl font-black text-gray-900 tracking-tight">
+                  ${Number(cartTotal).toLocaleString('es-CO')}
+                </span>
+              </div>
             </div>
-            <button className="btn btn-primary btn-checkout" onClick={handleWhatsAppCheckout}>
-              Finalizar Compra
+
+            {/* Botón Principal: Checkout WhatsApp */}
+            <button 
+              onClick={handleWhatsAppCheckout}
+              className="w-full py-4 rounded-xl bg-[#F5C227] hover:bg-[#e0b01c] active:scale-[0.99] text-[#111827] font-black text-xs uppercase tracking-wider shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Hacer pedido por WhatsApp</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
+
+            {/* Garantía y Seguridad */}
+            <div className="flex items-center justify-center gap-2 text-[11px] text-gray-400 font-medium">
+              <ShieldCheck className="w-4 h-4 text-green-600" />
+              <span>Atención directa y personalizada con la tienda física</span>
+            </div>
           </div>
         )}
-      </div>
+      </aside>
     </>
   );
 }

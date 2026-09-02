@@ -16,35 +16,51 @@ export function CartProvider({ children }) {
 
   const addToCart = (product, selectedColor, selectedTalla) => {
     setCart(prev => {
-      const existingItemIndex = prev.findIndex(
+      const existingIndex = prev.findIndex(
         item => item.id_modelo === product.id_modelo && 
                 item.color === selectedColor && 
                 item.talla === selectedTalla
       );
 
-      if (existingItemIndex >= 0) {
-        // Increment quantity if it already exists
+      // Calcular stock máximo disponible
+      const maxStock = (product.stock && product.stock[selectedColor] && product.stock[selectedColor][selectedTalla]) 
+        ? Number(product.stock[selectedColor][selectedTalla]) 
+        : 99;
+
+      if (existingIndex >= 0) {
+        // Si ya existe, incrementar cantidad respetando el inventario
         const newCart = [...prev];
-        const stockAvailable = product.stock[selectedColor][selectedTalla];
-        if (newCart[existingItemIndex].cantidad < stockAvailable) {
-          newCart[existingItemIndex].cantidad += 1;
+        if (newCart[existingIndex].cantidad < maxStock) {
+          newCart[existingIndex].cantidad += 1;
         }
         return newCart;
       } else {
-        // Add new item
+        // Extraer imagen correcta (soporta string directo o objeto Cloudinary)
+        let imgPath = '';
+        if (product.imagenes && product.imagenes.length > 0) {
+          imgPath = typeof product.imagenes[0] === 'object' 
+            ? product.imagenes[0].ruta_imagen 
+            : product.imagenes[0];
+        } else if (product.imagen_principal) {
+          imgPath = product.imagen_principal;
+        }
+
+        // Determinar precio efectivo
+        const finalPrice = Number(product.precio_oferta || product.precio_venta || product.precio_web || 0);
+
         return [...prev, {
           id_modelo: product.id_modelo,
           nombre: product.titulo_web || product.modelo_nombre,
-          precio: product.precio_oferta || product.precio_venta,
-          imagen: product.imagenes && product.imagenes.length > 0 ? product.imagenes[0] : null,
+          precio: finalPrice,
+          imagen: imgPath,
           color: selectedColor,
           talla: selectedTalla,
           cantidad: 1,
-          maxStock: product.stock[selectedColor][selectedTalla]
+          maxStock
         }];
       }
     });
-    setIsDrawerOpen(true); // Open drawer when item is added
+    setIsDrawerOpen(true);
   };
 
   const removeFromCart = (index) => {
