@@ -19,31 +19,88 @@ export default function Producto() {
   const [selectedTalla, setSelectedTalla] = useState('');
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
+  
+  // Touch & Drag state para animación fluida de deslizamiento
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [hasMoved, setHasMoved] = useState(false);
 
-  // Distancia mínima en píxeles para reconocer un deslizamiento (swipe)
-  const minSwipeDistance = 40;
+  // Touch state para el Modal
+  const [modalTouchStartX, setModalTouchStartX] = useState(0);
+  const [modalDragOffset, setModalDragOffset] = useState(0);
+  const [isModalDragging, setIsModalDragging] = useState(false);
 
-  const onTouchStartHandler = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+  // Manejadores de arrastre para el carrusel principal
+  const handleTouchStart = (e) => {
+    setTouchStartX(e.touches[0].clientX);
+    setIsDragging(true);
+    setHasMoved(false);
+    setDragOffset(0);
   };
 
-  const onTouchMoveHandler = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEndHandler = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    if (isLeftSwipe) {
-      nextImage();
-    } else if (isRightSwipe) {
-      prevImage();
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - touchStartX;
+    if (Math.abs(diff) > 4) {
+      setHasMoved(true);
     }
+    // Resistencia en extremos
+    if ((currentImageIdx === 0 && diff > 0) || (currentImageIdx === imagenesMostrar.length - 1 && diff < 0)) {
+      setDragOffset(diff * 0.25);
+    } else {
+      setDragOffset(diff);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    const threshold = 45;
+    if (dragOffset < -threshold && currentImageIdx < imagenesMostrar.length - 1) {
+      setCurrentImageIdx(prev => prev + 1);
+    } else if (dragOffset > threshold && currentImageIdx > 0) {
+      setCurrentImageIdx(prev => prev - 1);
+    }
+    setDragOffset(0);
+  };
+
+  const handleSlideClick = (idx) => {
+    if (!hasMoved) {
+      setCurrentImageIdx(idx);
+      setIsModalOpen(true);
+    }
+  };
+
+  // Manejadores de arrastre para el Modal Fullscreen
+  const handleModalTouchStart = (e) => {
+    setModalTouchStartX(e.touches[0].clientX);
+    setIsModalDragging(true);
+    setModalDragOffset(0);
+  };
+
+  const handleModalTouchMove = (e) => {
+    if (!isModalDragging) return;
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - modalTouchStartX;
+    if ((currentImageIdx === 0 && diff > 0) || (currentImageIdx === imagenesMostrar.length - 1 && diff < 0)) {
+      setModalDragOffset(diff * 0.25);
+    } else {
+      setModalDragOffset(diff);
+    }
+  };
+
+  const handleModalTouchEnd = () => {
+    if (!isModalDragging) return;
+    setIsModalDragging(false);
+    const threshold = 45;
+    if (modalDragOffset < -threshold && currentImageIdx < imagenesMostrar.length - 1) {
+      setCurrentImageIdx(prev => prev + 1);
+    } else if (modalDragOffset > threshold && currentImageIdx > 0) {
+      setCurrentImageIdx(prev => prev - 1);
+    }
+    setModalDragOffset(0);
   };
 
   // Bloquear scroll de la página y permitir navegación con teclado en el Modal
@@ -138,23 +195,40 @@ export default function Producto() {
     <div className="producto-page container mt-20 section-padding">
       <div className="producto-layout">
         
-        {/* GALERÍA DE IMÁGENES RESPONSIVA CON SWIPE Y ZOOM */}
+        {/* GALERÍA DE IMÁGENES RESPONSIVA CON ANIMACIÓN FLUIDA Y SWIPE */}
         <div className="flex flex-col gap-3 w-full">
           {/* Contenedor Principal de la Imagen */}
           <div 
-            className="relative w-full aspect-square sm:aspect-[4/3] md:aspect-square max-h-[500px] bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden flex items-center justify-center select-none cursor-zoom-in group shadow-xs"
-            onTouchStart={onTouchStartHandler}
-            onTouchMove={onTouchMoveHandler}
-            onTouchEnd={onTouchEndHandler}
-            onClick={() => imagenesMostrar.length > 0 && setIsModalOpen(true)}
+            className="relative w-full aspect-square sm:aspect-[4/3] md:aspect-square max-h-[500px] bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden flex items-center justify-center select-none shadow-xs group"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             {imagenesMostrar.length > 0 ? (
               <>
-                <img 
-                  src={getImgUrl(imagenesMostrar[currentImageIdx])} 
-                  alt={producto.titulo_web || producto.modelo_nombre} 
-                  className="w-full h-full object-contain p-2 sm:p-4 transition-transform duration-300 group-hover:scale-[1.02]" 
-                />
+                {/* Track deslizante continuo con animación fluida (tipo app nativa) */}
+                <div 
+                  className="flex h-full w-full will-change-transform cursor-zoom-in"
+                  style={{
+                    transform: `translateX(calc(-${currentImageIdx * 100}% + ${dragOffset}px))`,
+                    transition: isDragging ? 'none' : 'transform 320ms cubic-bezier(0.25, 1, 0.5, 1)'
+                  }}
+                >
+                  {imagenesMostrar.map((img, idx) => (
+                    <div 
+                      key={idx} 
+                      className="w-full h-full flex-shrink-0 flex items-center justify-center p-2 sm:p-4"
+                      onClick={() => handleSlideClick(idx)}
+                    >
+                      <img 
+                        src={getImgUrl(img)} 
+                        alt={`${producto.titulo_web || producto.modelo_nombre} - vista ${idx + 1}`} 
+                        className="w-full h-full object-contain pointer-events-none select-none transition-transform duration-300"
+                        draggable={false}
+                      />
+                    </div>
+                  ))}
+                </div>
 
                 {/* Botón flotante para abrir Modal / Zoom */}
                 <button
@@ -188,14 +262,14 @@ export default function Producto() {
 
                 {/* Indicadores de paginación táctil (Dots para móvil) */}
                 {imagenesMostrar.length > 1 && (
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/20 backdrop-blur-xs z-10">
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/25 backdrop-blur-xs z-10 pointer-events-auto">
                     {imagenesMostrar.map((_, dotIdx) => (
                       <button
                         key={dotIdx}
                         onClick={(e) => { e.stopPropagation(); setCurrentImageIdx(dotIdx); }}
                         className={`transition-all duration-300 rounded-full ${
                           dotIdx === currentImageIdx 
-                            ? 'w-4 h-1.5 bg-white' 
+                            ? 'w-5 h-1.5 bg-white' 
                             : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
                         }`}
                         aria-label={`Ir a imagen ${dotIdx + 1}`}
@@ -320,40 +394,55 @@ export default function Producto() {
 
       </div>
 
-      {/* LIGHTBOX / MODAL DE AMPLIACIÓN FULLSCREEN */}
+      {/* LIGHTBOX / MODAL DE AMPLIACIÓN FULLSCREEN CON SLIDER Y BOTÓN X FLOTANTE */}
       {isModalOpen && (
         <div 
           className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between select-none"
           onClick={() => setIsModalOpen(false)}
-          onTouchStart={onTouchStartHandler}
-          onTouchMove={onTouchMoveHandler}
-          onTouchEnd={onTouchEndHandler}
         >
-          {/* Barra superior del Modal */}
-          <div className="w-full px-4 sm:px-8 py-4 flex items-center justify-between text-white z-20">
-            <span className="text-xs sm:text-sm font-bold tracking-widest uppercase bg-white/10 px-3 py-1 rounded-full backdrop-blur-xs">
+          {/* Botón Flotante X Destacado para Cerrar la Imagen Ampliada */}
+          <button 
+            onClick={(e) => { e.stopPropagation(); setIsModalOpen(false); }}
+            className="fixed top-5 right-5 z-[100] w-12 h-12 rounded-full bg-black/70 hover:bg-black active:scale-95 text-white flex items-center justify-center cursor-pointer shadow-2xl backdrop-blur-md border border-white/20 transition-all duration-200"
+            aria-label="Cerrar imagen ampliada"
+          >
+            <X className="w-7 h-7 text-white stroke-[2.5]" />
+          </button>
+
+          {/* Barra superior con contador */}
+          <div className="w-full px-6 py-5 flex items-center justify-between text-white z-20 pointer-events-none">
+            <span className="text-xs sm:text-sm font-bold tracking-widest uppercase bg-white/15 px-3.5 py-1.5 rounded-full backdrop-blur-xs border border-white/10">
               {currentImageIdx + 1} / {imagenesMostrar.length}
             </span>
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors backdrop-blur-xs"
-              aria-label="Cerrar modal"
-            >
-              <X className="w-6 h-6" />
-            </button>
           </div>
 
-          {/* Contenedor central con Imagen Completa */}
+          {/* Contenedor central con Track Deslizante para el Modal */}
           <div 
-            className="relative flex-1 flex items-center justify-center p-2 sm:p-6 overflow-hidden"
+            className="relative flex-1 w-full flex items-center justify-center overflow-hidden"
+            onTouchStart={handleModalTouchStart}
+            onTouchMove={handleModalTouchMove}
+            onTouchEnd={handleModalTouchEnd}
             onClick={(e) => e.stopPropagation()}
           >
             {imagenesMostrar.length > 0 && (
-              <img 
-                src={getImgUrl(imagenesMostrar[currentImageIdx])} 
-                alt={producto.titulo_web || producto.modelo_nombre} 
-                className="max-h-[82vh] max-w-[95vw] object-contain rounded-lg transition-all duration-300 touch-pinch-zoom shadow-2xl" 
-              />
+              <div 
+                className="flex h-full w-full items-center will-change-transform"
+                style={{
+                  transform: `translateX(calc(-${currentImageIdx * 100}% + ${modalDragOffset}px))`,
+                  transition: isModalDragging ? 'none' : 'transform 320ms cubic-bezier(0.25, 1, 0.5, 1)'
+                }}
+              >
+                {imagenesMostrar.map((img, idx) => (
+                  <div key={idx} className="w-full h-full flex-shrink-0 flex items-center justify-center p-4 sm:p-8">
+                    <img 
+                      src={getImgUrl(img)} 
+                      alt={`${producto.titulo_web || producto.modelo_nombre} - ampliada ${idx + 1}`} 
+                      className="max-h-[80vh] max-w-[95vw] object-contain rounded-lg transition-all duration-300 touch-pinch-zoom shadow-2xl select-none" 
+                      draggable={false}
+                    />
+                  </div>
+                ))}
+              </div>
             )}
 
             {/* Flechas de navegación en el Modal */}
@@ -361,14 +450,14 @@ export default function Producto() {
               <>
                 <button 
                   onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer z-20 active:scale-95"
+                  className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer z-30 active:scale-95 border border-white/15"
                   aria-label="Imagen anterior"
                 >
                   <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer z-20 active:scale-95"
+                  className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer z-30 active:scale-95 border border-white/15"
                   aria-label="Siguiente imagen"
                 >
                   <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
@@ -380,15 +469,15 @@ export default function Producto() {
           {/* Tira inferior de miniaturas en el Modal */}
           {imagenesMostrar.length > 1 && (
             <div 
-              className="w-full px-4 py-4 flex items-center justify-center gap-2 overflow-x-auto z-20"
+              className="w-full px-4 py-5 flex items-center justify-center gap-2 overflow-x-auto z-20 bg-gradient-to-t from-black/80 to-transparent"
               onClick={(e) => e.stopPropagation()}
             >
               {imagenesMostrar.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentImageIdx(idx)}
-                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-white/5 border-2 overflow-hidden flex-shrink-0 cursor-pointer transition-all p-1 ${
-                    idx === currentImageIdx ? 'border-white opacity-100 scale-110' : 'border-transparent opacity-40 hover:opacity-75'
+                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/5 border-2 overflow-hidden flex-shrink-0 cursor-pointer transition-all p-1 ${
+                    idx === currentImageIdx ? 'border-white opacity-100 scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-80'
                   }`}
                   aria-label={`Miniatura ${idx + 1}`}
                 >
