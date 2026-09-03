@@ -441,127 +441,98 @@ export default function Producto() {
 
       </div>
 
-      {/* SECCIÓN MÁS MODELOS (ESTILO ADIDAS) */}
+      {/* SECCIÓN QUIZÁ TAMBIÉN TE GUSTE... (ESTILO EXACTO ADIDAS) */}
       {relacionados.length > 0 && (
-        <section className="mt-16 sm:mt-24 pt-10 sm:pt-14 border-t border-gray-100">
-          <div className="flex items-end justify-between mb-6 sm:mb-8">
-            <div>
-              <span className="text-xs font-black tracking-widest text-[#F5C227] uppercase block mb-1">
-                Catálogo Exclusivo
-              </span>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 tracking-tight uppercase">
-                Quizá también te guste...
-              </h2>
-            </div>
-
-            {/* Controles de Navegación y Enlace a Catálogo */}
-            <div className="flex items-center gap-3">
-              <Link 
-                to="/catalogo" 
-                className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-900 uppercase tracking-wider transition-colors mr-2"
-              >
-                Ver todo <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-              <button 
-                onClick={() => scrollCarousel('left')}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95"
-                aria-label="Anterior"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={() => scrollCarousel('right')}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95"
-                aria-label="Siguiente"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+        <section className="mt-16 sm:mt-24 pt-10 sm:pt-14 border-t border-gray-200">
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-gray-900 uppercase font-sans">
+              QUIZÁ TAMBIÉN TE GUSTE...
+            </h2>
+            <Link 
+              to="/catalogo" 
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-gray-800 hover:text-black uppercase tracking-wider underline underline-offset-4"
+            >
+              Ver catálogo completo <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
-          {/* Carrusel Deslizante de Productos Relacionados */}
-          <div 
-            ref={carouselRef}
-            className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 pt-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
-          >
+          {/* Grilla de Calzados: 4 Columnas en PC y 2 en Móvil (Estilo Adidas) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             {relacionados.map((prod) => (
               <Link
                 key={`${prod.id_modelo}-${prod.color_nombre}`}
                 to={`/producto/${prod.id_modelo}?color=${encodeURIComponent(prod.color_nombre || '')}`}
-                className="flex-shrink-0 w-[200px] sm:w-[240px] md:w-[260px] snap-start group flex flex-col text-left transition-transform duration-200 hover:-translate-y-1"
+                className="group flex flex-col text-left transition-transform duration-200 hover:-translate-y-1"
               >
-                {/* Contenedor de Imagen */}
-                <div className="relative aspect-square w-full bg-[#f6f6f6] rounded-xl overflow-hidden flex items-center justify-center border border-gray-100">
+                {/* Contenedor de Imagen gris minimalista (#ebedee) idéntico a Adidas */}
+                <div className="relative aspect-square w-full bg-[#ebedee] overflow-hidden flex items-center justify-center">
                   {prod.imagen_principal ? (
                     <img 
                       src={getOptimizedImgUrl(prod.imagen_principal, 500)} 
                       alt={prod.modelo_nombre} 
                       loading="lazy"
                       decoding="async"
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" 
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 ease-out" 
                     />
                   ) : (
                     <div className="text-gray-400 text-xs font-medium">Sin Foto</div>
                   )}
 
-                  {/* Botón Favoritos (Estilo Adidas) */}
+                  {/* Botón Favoritos (Corazón limpio outline sin círculo, idéntico a Adidas) */}
                   <button 
-                    className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-400 hover:text-red-500 flex items-center justify-center transition-all duration-200 shadow-xs cursor-pointer active:scale-90"
+                    type="button"
+                    className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 p-1 text-gray-800 hover:text-red-500 hover:scale-110 transition-all duration-200 cursor-pointer"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     aria-label="Agregar a favoritos"
                   >
-                    <Heart className="w-4 h-4" />
+                    <Heart className="w-5 h-5 stroke-[1.75] hover:fill-red-500" />
                   </button>
                 </div>
 
-                {/* Info del Producto */}
-                <div className="pt-2.5 pb-1 flex flex-col">
-                  {/* Precio */}
-                  <div className="flex items-baseline gap-1.5 mb-0.5">
+                {/* Info del Producto (Tipografía y estructura idéntica a Adidas) */}
+                <div className="pt-2.5 sm:pt-3 pb-2 flex flex-col">
+                  {/* Precio Principal */}
+                  <div className="flex flex-col">
                     {prod.precio_oferta ? (
                       <>
-                        <span className="text-sm sm:text-base font-black text-gray-900">
+                        <span className="text-xs sm:text-sm font-bold text-gray-900">
                           ${Number(prod.precio_oferta).toLocaleString('es-CO')}
                         </span>
-                        <span className="text-xs text-gray-400 line-through">
+                        <span className="text-[11px] sm:text-xs font-semibold text-[#00735c] mt-0.5">
+                          ${Number(prod.precio_oferta).toLocaleString('es-CO')} en oferta
+                        </span>
+                        <span className="text-[10px] sm:text-[11px] text-gray-400 line-through">
                           ${Number(prod.precio_venta || prod.precio_web || 0).toLocaleString('es-CO')}
                         </span>
                       </>
                     ) : (
-                      <span className="text-sm sm:text-base font-black text-gray-900">
+                      <span className="text-xs sm:text-sm font-bold text-gray-900">
                         ${Number(prod.precio_venta || prod.precio_web || 0).toLocaleString('es-CO')}
                       </span>
                     )}
                   </div>
 
-                  {/* Nombre / Título */}
-                  <h4 className="text-xs sm:text-sm font-bold text-gray-900 uppercase truncate leading-snug group-hover:text-amber-600 transition-colors">
+                  {/* Nombre / Título del modelo en Title Case */}
+                  <h3 className="text-xs sm:text-sm font-normal text-gray-900 mt-1 line-clamp-1 group-hover:underline">
                     {prod.titulo_web || prod.modelo_nombre}
-                  </h4>
+                  </h3>
 
-                  {/* Categoría */}
-                  <span className="text-[11px] sm:text-xs text-gray-500 font-normal truncate mt-0.5">
+                  {/* Categoría / Marca */}
+                  <span className="text-[11px] sm:text-xs text-gray-500 font-normal mt-0.5 capitalize">
                     {prod.categoria_nombre || 'Calzado Urbano'}
                   </span>
-
-                  {/* Color */}
-                  {prod.color_nombre && (
-                    <span className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase truncate mt-0.5">
-                      {prod.color_nombre}
-                    </span>
-                  )}
                 </div>
               </Link>
             ))}
           </div>
 
-          {/* Enlace móvil para ver todo el catálogo */}
-          <div className="mt-4 text-center sm:hidden">
+          {/* Enlace móvil para ver más modelos */}
+          <div className="mt-8 text-center sm:hidden">
             <Link 
               to="/catalogo"
-              className="inline-flex items-center gap-1.5 text-xs font-black text-gray-900 uppercase tracking-wider py-2 px-4 rounded-full bg-gray-100 hover:bg-gray-200"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-900 uppercase tracking-wider py-2.5 px-6 rounded-full border border-gray-300 bg-white hover:bg-gray-50"
             >
-              Ver más modelos <ArrowRight className="w-3.5 h-3.5" />
+              Ver todo el catálogo <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </section>
