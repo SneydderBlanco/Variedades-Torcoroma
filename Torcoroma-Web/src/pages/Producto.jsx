@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { ShoppingBag, Check, ChevronLeft, ChevronRight, Info, Heart, X, Maximize2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -114,13 +115,16 @@ export default function Producto() {
 
     if (isModalOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('lightbox-open');
       window.addEventListener('keydown', handleKeyDown);
     } else {
       document.body.style.overflow = 'unset';
+      document.body.classList.remove('lightbox-open');
     }
 
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.classList.remove('lightbox-open');
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isModalOpen, currentImageIdx]);
@@ -396,16 +400,16 @@ export default function Producto() {
 
       </div>
 
-      {/* LIGHTBOX / MODAL DE AMPLIACIÓN FULLSCREEN CON SLIDER Y BOTÓN X FLOTANTE */}
-      {isModalOpen && (
+      {/* LIGHTBOX / MODAL DE AMPLIACIÓN FULLSCREEN CON PORTAL DIRECTO A BODY */}
+      {isModalOpen && typeof document !== 'undefined' && createPortal(
         <div 
-          className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex flex-col justify-between select-none modal-lightbox-animate"
+          className="fixed inset-0 z-[999999] bg-black/95 backdrop-blur-xl flex flex-col justify-between select-none modal-lightbox-animate overflow-hidden"
           onClick={() => setIsModalOpen(false)}
         >
-          {/* Barra superior con contador */}
-          <div className="w-full px-5 py-4 sm:px-8 sm:py-6 flex items-center justify-between text-white z-20 pointer-events-none">
+          {/* Barra superior con contador y pista */}
+          <div className="w-full h-14 sm:h-16 flex-shrink-0 px-4 sm:px-8 flex items-center justify-between text-white z-20 pointer-events-none">
             <div className="flex items-center gap-3">
-              <span className="text-xs sm:text-sm font-black tracking-widest uppercase bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-md border border-white/15 shadow-sm">
+              <span className="text-xs sm:text-sm font-black tracking-widest uppercase bg-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-md border border-white/15 shadow-sm">
                 {currentImageIdx + 1} / {imagenesMostrar.length}
               </span>
               <span className="hidden sm:inline-block text-xs text-gray-400 font-medium tracking-wide">
@@ -416,7 +420,7 @@ export default function Producto() {
 
           {/* Contenedor central con Track Deslizante para el Modal */}
           <div 
-            className="relative flex-1 w-full flex items-center justify-center overflow-hidden cursor-pointer"
+            className="relative flex-1 w-full min-h-0 flex items-center justify-center overflow-hidden cursor-pointer"
             onTouchStart={handleModalTouchStart}
             onTouchMove={handleModalTouchMove}
             onTouchEnd={handleModalTouchEnd}
@@ -433,25 +437,25 @@ export default function Producto() {
                 {imagenesMostrar.map((img, idx) => (
                   <div 
                     key={idx} 
-                    className={`w-full h-full flex-shrink-0 flex items-center justify-center p-3 sm:p-8 transition-all duration-500 ease-out ${
+                    className={`w-full h-full flex-shrink-0 flex items-center justify-center p-2 sm:p-6 transition-all duration-500 ease-out ${
                       idx === currentImageIdx ? 'opacity-100 scale-100' : 'opacity-20 scale-90'
                     }`}
                   >
                     <div 
-                      className="relative pointer-events-auto flex items-center justify-center group/photo"
+                      className="relative pointer-events-auto flex items-center justify-center max-h-full max-w-full group/photo"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <img 
                         src={getImgUrl(img)} 
                         alt={`${producto.titulo_web || producto.modelo_nombre} - ampliada ${idx + 1}`} 
-                        className="max-h-[78vh] sm:max-h-[80vh] max-w-[95vw] sm:max-w-[85vw] object-contain rounded-2xl transition-transform duration-500 touch-pinch-zoom shadow-2xl select-none" 
+                        className="max-h-[calc(100vh-160px)] max-w-[95vw] sm:max-w-[85vw] object-contain rounded-2xl transition-transform duration-500 touch-pinch-zoom shadow-2xl select-none" 
                         draggable={false}
                       />
                       {/* Botón flotante X aesthetic directamente SOBRE la foto en la esquina superior derecha */}
                       <button 
                         onClick={(e) => { e.stopPropagation(); setIsModalOpen(false); }}
-                        className="absolute top-3 right-3 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center shadow-lg backdrop-blur-md border border-white/20 transition-all duration-200 cursor-pointer active:scale-90 hover:scale-105"
-                        title="Cerrar"
+                        className="absolute top-3 right-3 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center shadow-lg backdrop-blur-md border border-white/20 transition-all duration-200 cursor-pointer active:scale-90 hover:scale-105 z-30"
+                        title="Cerrar (Esc)"
                         aria-label="Cerrar imagen"
                       >
                         <X className="w-5 h-5 text-white stroke-[2.5]" />
@@ -486,14 +490,14 @@ export default function Producto() {
           {/* Tira inferior de miniaturas en el Modal */}
           {imagenesMostrar.length > 1 && (
             <div 
-              className="w-full px-4 py-4 sm:py-5 flex items-center justify-center gap-2.5 overflow-x-auto z-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent scrollbar-none"
+              className="w-full h-18 sm:h-20 flex-shrink-0 px-4 py-3 flex items-center justify-center gap-2.5 overflow-x-auto z-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent scrollbar-none"
               onClick={(e) => e.stopPropagation()}
             >
               {imagenesMostrar.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentImageIdx(idx)}
-                  className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-white/5 border-2 overflow-hidden flex-shrink-0 cursor-pointer transition-all duration-300 p-1 flex items-center justify-center ${
+                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/5 border-2 overflow-hidden flex-shrink-0 cursor-pointer transition-all duration-300 p-1 flex items-center justify-center ${
                     idx === currentImageIdx 
                       ? 'border-yellow-400 ring-2 ring-yellow-400/50 opacity-100 scale-110 shadow-2xl bg-white/10' 
                       : 'border-white/10 opacity-40 hover:opacity-80 hover:scale-105'
@@ -505,7 +509,8 @@ export default function Producto() {
               ))}
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

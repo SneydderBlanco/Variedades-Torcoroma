@@ -17,6 +17,15 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
+/* Cuando el lightbox de imagen ampliada está abierto, ocultar la barra de navegación completamente en cualquier pantalla */
+body.lightbox-open .navbar {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-100%) !important;
+  transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
 .nav-container {
   display: flex;
   align-items: center;
