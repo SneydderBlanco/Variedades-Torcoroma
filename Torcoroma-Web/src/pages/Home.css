@@ -235,6 +235,11 @@
 }
 
 /* PROMO BANNER */
+.promo-section {
+  margin: 4.5rem auto 3rem auto;
+  padding: 0 1.25rem;
+}
+
 .promo-banner {
   position: relative;
   background-color: var(--color-primary);
@@ -242,72 +247,89 @@
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: scroll;
-  border-radius: 1.75rem;
-  margin: 3.5rem auto;
+  border-radius: 2rem;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 350px;
-  min-height: 320px;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+  min-height: 520px;
+  padding: 4rem 2rem;
+  box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.14);
 }
 
 .promo-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.12);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.32) 100%);
   pointer-events: none;
 }
 
 .promo-content {
   position: relative;
   z-index: 2;
-  max-width: 480px;
-  width: 90%;
-  padding: 2rem 2.5rem;
-  border-radius: 1.25rem;
+  max-width: 520px;
+  width: 100%;
+  padding: 2.75rem 2.5rem;
+  border-radius: 1.5rem;
   text-align: center;
   margin: 0 auto;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
 }
 
 .promo-badge {
-  display: inline-block;
-  font-size: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.675rem;
   font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #b45309;
-  background: rgba(245, 194, 39, 0.22);
-  padding: 0.25rem 0.75rem;
+  color: #111827;
+  background: #F5C227;
+  padding: 0.35rem 0.9rem;
   border-radius: 9999px;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.9rem;
+  box-shadow: 0 2px 8px rgba(245, 194, 39, 0.35);
 }
 
 .promo-content h2 {
-  font-size: 1.75rem;
-  font-weight: 800;
-  line-height: 1.25;
-  margin-bottom: 0.6rem;
+  font-size: 2.1rem;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
   color: var(--color-primary);
   letter-spacing: -0.5px;
+  text-wrap: balance;
 }
 
 .promo-content p {
-  font-size: 0.925rem;
+  font-size: 0.95rem;
   color: #4b5563;
-  line-height: 1.5;
-  margin-bottom: 1.25rem;
+  line-height: 1.55;
+  margin-bottom: 1.5rem;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+  text-wrap: pretty;
 }
 
 .promo-content .btn {
-  padding: 0.7rem 1.75rem;
-  font-size: 0.825rem;
-  font-weight: 700;
+  padding: 0.85rem 2.25rem;
+  font-size: 0.85rem;
+  font-weight: 800;
   letter-spacing: 0.5px;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.15);
+  transition: all 0.2s ease;
+}
+
+.promo-content .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(17, 24, 39, 0.25);
 }
 
 @media (max-width: 768px) {
@@ -321,29 +343,51 @@
   .section-title { font-size: 1.5rem; }
 
   .product-info { padding: 0.5rem 0; }
+  .promo-section {
+    margin: 2.5rem auto 2rem auto;
+    padding: 0 1rem;
+  }
   .promo-banner {
-    height: auto;
-    min-height: 280px;
-    padding: 2.5rem 1rem;
-    border-radius: 1.25rem;
-    margin: 2.5rem auto;
+    min-height: 380px;
+    padding: 3rem 1.25rem;
+    border-radius: 1.35rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   }
   .promo-content {
     width: 100%;
-    max-width: 100%;
-    padding: 1.75rem 1.25rem;
-    border-radius: 1rem;
+    max-width: 360px;
+    padding: 2rem 1.25rem;
+    border-radius: 1.15rem;
   }
   .promo-content h2 {
-    font-size: 1.35rem;
+    font-size: 1.45rem;
+    line-height: 1.25;
     margin-bottom: 0.5rem;
   }
   .promo-content p {
     font-size: 0.85rem;
-    margin-bottom: 1rem;
+    line-height: 1.45;
+    margin-bottom: 1.25rem;
   }
   .promo-content .btn {
     width: 100%;
+    padding: 0.85rem 1.25rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .promo-section {
+    padding: 0 0.75rem;
+  }
+  .promo-banner {
+    padding: 2.25rem 0.85rem;
+    border-radius: 1.15rem;
+  }
+  .promo-content {
+    padding: 1.75rem 1rem;
+  }
+  .promo-content h2 {
+    font-size: 1.3rem;
   }
 }
 

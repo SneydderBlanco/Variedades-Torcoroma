@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { ShoppingBag, Check, ChevronLeft, ChevronRight, Info, Heart, X, Maximize2 } from 'lucide-react';
+import { ShoppingBag, Check, ChevronLeft, ChevronRight, Info, Heart, X, Maximize2, ArrowRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { getOptimizedImgUrl } from '../utils/imageOptimizer';
+import { getProductosWeb } from '../services/ecommerceService';
 import './Producto.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
 
 
 export default function Producto() {
@@ -134,6 +135,22 @@ export default function Producto() {
     setCurrentImageIdx(0);
   }, [selectedColor]);
 
+  // Estado y referencia para la sección "Más Modelos"
+  const [relacionados, setRelacionados] = useState([]);
+  const carouselRef = useRef(null);
+
+  const scrollCarousel = (direction) => {
+    if (carouselRef.current) {
+      const scrollAmount = direction === 'left' ? -320 : 320;
+      carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  // Desplazar automáticamente hacia arriba cuando cambia el producto
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [id]);
+
   useEffect(() => {
     const fetchProducto = async () => {
       try {
@@ -158,6 +175,30 @@ export default function Producto() {
     };
     fetchProducto();
   }, [id]);
+
+  // Cargar más modelos sugeridos (excluyendo el actual y priorizando misma categoría)
+  useEffect(() => {
+    let isMounted = true;
+    const loadRelacionados = async () => {
+      try {
+        const allProds = await getProductosWeb();
+        if (isMounted && allProds && allProds.length > 0) {
+          const otros = allProds.filter(p => Number(p.id_modelo) !== Number(id));
+          const mismaCat = otros.filter(p => 
+            p.categoria_nombre && producto?.categoria_nombre && 
+            p.categoria_nombre.toLowerCase() === producto.categoria_nombre.toLowerCase()
+          );
+          const otrasCat = otros.filter(p => !mismaCat.some(m => m.id_modelo === p.id_modelo));
+          const seleccion = [...mismaCat, ...otrasCat].slice(0, 10);
+          setRelacionados(seleccion);
+        }
+      } catch (err) {
+        console.error("Error al cargar productos relacionados", err);
+      }
+    };
+    loadRelacionados();
+    return () => { isMounted = false; };
+  }, [id, producto?.categoria_nombre]);
 
   if (loading) {
     return <div className="producto-page container mt-20"><div className="loading-spinner">Cargando detalles...</div></div>;
@@ -227,7 +268,7 @@ export default function Producto() {
                       onClick={() => handleSlideClick(idx)}
                     >
                       <img 
-                        src={getImgUrl(img)} 
+                        src={getOptimizedImgUrl(img, 800)} 
                         alt={`${producto.titulo_web || producto.modelo_nombre} - vista ${idx + 1}`} 
                         className="w-full h-full object-contain pointer-events-none select-none transition-transform duration-500"
                         draggable={false}
@@ -310,7 +351,7 @@ export default function Producto() {
                   onClick={() => setCurrentImageIdx(idx)}
                   aria-label={`Ver miniatura ${idx + 1}`}
                 >
-                  <img src={getImgUrl(img)} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-contain" />
+                  <img src={getOptimizedImgUrl(img, 180)} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-contain" />
                 </button>
               ))}
             </div>
@@ -400,6 +441,132 @@ export default function Producto() {
 
       </div>
 
+      {/* SECCIÓN MÁS MODELOS (ESTILO ADIDAS) */}
+      {relacionados.length > 0 && (
+        <section className="mt-16 sm:mt-24 pt-10 sm:pt-14 border-t border-gray-100">
+          <div className="flex items-end justify-between mb-6 sm:mb-8">
+            <div>
+              <span className="text-xs font-black tracking-widest text-[#F5C227] uppercase block mb-1">
+                Catálogo Exclusivo
+              </span>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 tracking-tight uppercase">
+                Quizá también te guste...
+              </h2>
+            </div>
+
+            {/* Controles de Navegación y Enlace a Catálogo */}
+            <div className="flex items-center gap-3">
+              <Link 
+                to="/catalogo" 
+                className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-900 uppercase tracking-wider transition-colors mr-2"
+              >
+                Ver todo <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <button 
+                onClick={() => scrollCarousel('left')}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95"
+                aria-label="Anterior"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => scrollCarousel('right')}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95"
+                aria-label="Siguiente"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Carrusel Deslizante de Productos Relacionados */}
+          <div 
+            ref={carouselRef}
+            className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 pt-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
+          >
+            {relacionados.map((prod) => (
+              <Link
+                key={`${prod.id_modelo}-${prod.color_nombre}`}
+                to={`/producto/${prod.id_modelo}?color=${encodeURIComponent(prod.color_nombre || '')}`}
+                className="flex-shrink-0 w-[200px] sm:w-[240px] md:w-[260px] snap-start group flex flex-col text-left transition-transform duration-200 hover:-translate-y-1"
+              >
+                {/* Contenedor de Imagen */}
+                <div className="relative aspect-square w-full bg-[#f6f6f6] rounded-xl overflow-hidden flex items-center justify-center border border-gray-100">
+                  {prod.imagen_principal ? (
+                    <img 
+                      src={getOptimizedImgUrl(prod.imagen_principal, 500)} 
+                      alt={prod.modelo_nombre} 
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" 
+                    />
+                  ) : (
+                    <div className="text-gray-400 text-xs font-medium">Sin Foto</div>
+                  )}
+
+                  {/* Botón Favoritos (Estilo Adidas) */}
+                  <button 
+                    className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-400 hover:text-red-500 flex items-center justify-center transition-all duration-200 shadow-xs cursor-pointer active:scale-90"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    aria-label="Agregar a favoritos"
+                  >
+                    <Heart className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Info del Producto */}
+                <div className="pt-2.5 pb-1 flex flex-col">
+                  {/* Precio */}
+                  <div className="flex items-baseline gap-1.5 mb-0.5">
+                    {prod.precio_oferta ? (
+                      <>
+                        <span className="text-sm sm:text-base font-black text-gray-900">
+                          ${Number(prod.precio_oferta).toLocaleString('es-CO')}
+                        </span>
+                        <span className="text-xs text-gray-400 line-through">
+                          ${Number(prod.precio_venta || prod.precio_web || 0).toLocaleString('es-CO')}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm sm:text-base font-black text-gray-900">
+                        ${Number(prod.precio_venta || prod.precio_web || 0).toLocaleString('es-CO')}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Nombre / Título */}
+                  <h4 className="text-xs sm:text-sm font-bold text-gray-900 uppercase truncate leading-snug group-hover:text-amber-600 transition-colors">
+                    {prod.titulo_web || prod.modelo_nombre}
+                  </h4>
+
+                  {/* Categoría */}
+                  <span className="text-[11px] sm:text-xs text-gray-500 font-normal truncate mt-0.5">
+                    {prod.categoria_nombre || 'Calzado Urbano'}
+                  </span>
+
+                  {/* Color */}
+                  {prod.color_nombre && (
+                    <span className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase truncate mt-0.5">
+                      {prod.color_nombre}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Enlace móvil para ver todo el catálogo */}
+          <div className="mt-4 text-center sm:hidden">
+            <Link 
+              to="/catalogo"
+              className="inline-flex items-center gap-1.5 text-xs font-black text-gray-900 uppercase tracking-wider py-2 px-4 rounded-full bg-gray-100 hover:bg-gray-200"
+            >
+              Ver más modelos <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </section>
+      )}
+
       {/* LIGHTBOX / MODAL DE AMPLIACIÓN FULLSCREEN CON PORTAL DIRECTO A BODY */}
       {isModalOpen && typeof document !== 'undefined' && createPortal(
         <div 
@@ -446,7 +613,7 @@ export default function Producto() {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <img 
-                        src={getImgUrl(img)} 
+                        src={getOptimizedImgUrl(img, 1200)} 
                         alt={`${producto.titulo_web || producto.modelo_nombre} - ampliada ${idx + 1}`} 
                         className="max-h-[calc(100vh-160px)] max-w-[95vw] sm:max-w-[85vw] object-contain rounded-2xl transition-transform duration-500 touch-pinch-zoom shadow-2xl select-none" 
                         draggable={false}
@@ -504,7 +671,7 @@ export default function Producto() {
                   }`}
                   aria-label={`Miniatura ${idx + 1}`}
                 >
-                  <img src={getImgUrl(img)} alt={`thumb-${idx}`} className="w-full h-full object-contain" />
+                  <img src={getOptimizedImgUrl(img, 150)} alt={`thumb-${idx}`} className="w-full h-full object-contain" />
                 </button>
               ))}
             </div>

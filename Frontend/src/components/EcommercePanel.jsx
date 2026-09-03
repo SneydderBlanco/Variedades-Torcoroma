@@ -3,7 +3,15 @@ import { Search, UploadCloud, Globe, CheckCircle, Tag, XCircle, Image as ImageIc
 import WebConfigModal from './WebConfigModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
+const getImgUrl = (path, width = 300) => {
+  if (!path) return '';
+  if (typeof path === 'string' && path.includes('res.cloudinary.com') && path.includes('/upload/')) {
+    if (!path.includes('/upload/f_auto') && !path.includes('/upload/w_')) {
+      return path.replace('/upload/', `/upload/f_auto,q_auto,w_${width},c_limit/`);
+    }
+  }
+  return path.startsWith('http') ? path : `${API_URL}${path}`;
+};
 
 
 export default function EcommercePanel() {

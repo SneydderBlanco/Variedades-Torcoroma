@@ -52,7 +52,7 @@ export default function Navbar() {
 
         <div className="nav-icons">
           <button className="icon-btn"><Search className="w-5 h-5" /></button>
-          <button className="icon-btn cart-btn" onClick={toggleDrawer}>
+          <button className="icon-btn cart-btn" onClick={() => { setMenuOpen(false); toggleDrawer(); }} aria-label="Abrir carrito">
             <ShoppingBag className="w-5 h-5" />
             {itemsCount > 0 && <span className="cart-badge">{itemsCount}</span>}
           </button>

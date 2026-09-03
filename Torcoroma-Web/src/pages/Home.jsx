@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Heart } from 'lucide-react';
+import { getProductosWeb, getWebConfig, subscribeToEcommerceUpdates } from '../services/ecommerceService';
+import { getOptimizedImgUrl } from '../utils/imageOptimizer';
 import './Home.css';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
-
 
 export default function Home() {
   const [destacados, setDestacados] = useState([]);
@@ -13,28 +11,39 @@ export default function Home() {
   const [webConfig, setWebConfig] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchHomeData = async () => {
       try {
-        const [resProds, resConfig] = await Promise.all([
-          fetch(`${API_URL}/api/ecommerce/productos`),
-          fetch(`${API_URL}/api/ecommerce/config`)
+        const [dataProds, dataConfig] = await Promise.all([
+          getProductosWeb(),
+          getWebConfig()
         ]);
         
-        if (resProds.ok) {
-          const data = await resProds.json();
-          setDestacados(data.slice(0, 4));
-        }
-
-        if (resConfig.ok) {
-          setWebConfig(await resConfig.json());
+        if (isMounted) {
+          if (dataProds) setDestacados(dataProds.slice(0, 4));
+          if (dataConfig) setWebConfig(dataConfig);
+          setLoading(false);
         }
       } catch (error) {
         console.error("Error al cargar datos del Home", error);
-      } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
+
     fetchHomeData();
+
+    // SWR background update
+    const unsubscribe = subscribeToEcommerceUpdates((type, data) => {
+      if (type === 'productos' && isMounted) {
+        setDestacados(data.slice(0, 4));
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   return (
@@ -42,7 +51,7 @@ export default function Home() {
       {/* HERO SECTION */}
       <section 
         className="hero"
-        style={webConfig?.hero_img ? { backgroundImage: `linear-gradient(to right, rgba(17, 24, 39, 0.9), rgba(17, 24, 39, 0.4)), url(${API_URL}${webConfig.hero_img})` } : {}}
+        style={webConfig?.hero_img ? { backgroundImage: `linear-gradient(to right, rgba(17, 24, 39, 0.9), rgba(17, 24, 39, 0.4)), url(${getOptimizedImgUrl(webConfig.hero_img, 1400)})` } : {}}
       >
         <div className="hero-content container">
           <span className="hero-subtitle">{webConfig?.hero_subtitle || 'NUEVA COLECCIÓN'}</span>
@@ -87,12 +96,14 @@ export default function Home() {
                 key={`${prod.id_modelo}-${prod.color_nombre}`} 
                 className="group flex flex-col cursor-pointer transition-transform duration-200 hover:-translate-y-1 text-left"
               >
-                {/* Contenedor de Imagen */}
+                {/* Contenedor de Imagen Optimizada */}
                 <div className="relative aspect-square w-full bg-gray-100 rounded-sm overflow-hidden flex items-center justify-center">
                   {prod.imagen_principal ? (
                     <img 
-                      src={getImgUrl(prod.imagen_principal)} 
+                      src={getOptimizedImgUrl(prod.imagen_principal, 500)} 
                       alt={prod.modelo_nombre} 
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" 
                     />
                   ) : (
@@ -158,16 +169,18 @@ export default function Home() {
       </section>
 
       {/* BANNER PROMOCIONAL */}
-      <section 
-        className="promo-banner container"
-        style={webConfig?.promo_img ? { backgroundImage: `url(${getImgUrl(webConfig.promo_img)})` } : {}}
-      >
-        <div className="promo-overlay"></div>
-        <div className="promo-content glass">
-          <span className="promo-badge">OFERTA ESPECIAL</span>
-          <h2>{webConfig?.promo_title || 'Estilo y Confort sin Compromisos.'}</h2>
-          <p>{webConfig?.promo_text || 'Encuentra tu talla ideal con nuestro sistema de inventario en vivo.'}</p>
-          <Link to="/catalogo" className="btn btn-primary mt-2">Explorar Colección</Link>
+      <section className="promo-section container">
+        <div 
+          className="promo-banner"
+          style={webConfig?.promo_img ? { backgroundImage: `url(${getOptimizedImgUrl(webConfig.promo_img, 1400)})` } : {}}
+        >
+          <div className="promo-overlay"></div>
+          <div className="promo-content glass">
+            <span className="promo-badge">OFERTA ESPECIAL</span>
+            <h2>{webConfig?.promo_title || 'Estilo y Confort sin Compromisos.'}</h2>
+            <p>{webConfig?.promo_text || 'Encuentra tu talla ideal con nuestro sistema de inventario en vivo.'}</p>
+            <Link to="/catalogo" className="btn btn-primary">Explorar Colección</Link>
+          </div>
         </div>
       </section>
     </div>

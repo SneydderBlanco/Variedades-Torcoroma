@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, ShieldCheck, Truck } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, ArrowLeft, ShieldCheck, Truck, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
@@ -12,6 +12,32 @@ export default function CartDrawer() {
   const FREE_SHIPPING_THRESHOLD = 150000;
   const shippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - cartTotal);
   const shippingProgress = Math.min(100, (cartTotal / FREE_SHIPPING_THRESHOLD) * 100);
+
+  // Bloquear scroll de fondo y ocultar navbar cuando el carrito está abierto
+  useEffect(() => {
+    if (isDrawerOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('cart-open');
+    } else {
+      document.body.style.overflow = 'unset';
+      document.body.classList.remove('cart-open');
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.body.classList.remove('cart-open');
+    };
+  }, [isDrawerOpen]);
+
+  // Cerrar carrito al presionar tecla Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isDrawerOpen) {
+        toggleDrawer();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDrawerOpen, toggleDrawer]);
 
   const handleWhatsAppCheckout = () => {
     const phone = "573224613457"; 
@@ -43,49 +69,72 @@ export default function CartDrawer() {
 
   return (
     <>
-      {/* Fondo Oscuro / Overlay con desenfoque */}
+      {/* Fondo Oscuro / Overlay con desenfoque (z-[9998] para cubrir toda la pantalla detrás del carrito) */}
       <div 
-        className={`fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/60 backdrop-blur-xs z-[9998] transition-opacity duration-300 ${
           isDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={toggleDrawer}
         aria-hidden="true"
       />
 
-      {/* Sidebar / Offcanvas Lateral */}
+      {/* Sidebar / Offcanvas Lateral con fondo sólido blanco y z-[9999] */}
       <aside 
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full h-[100dvh] max-h-[100dvh] w-full max-w-md bg-white z-[9999] shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
           isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        aria-modal="true"
+        role="dialog"
       >
-        {/* Cabecera del Carrito */}
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gray-900 text-[#F5C227] flex items-center justify-center">
+        {/* Encabezado del Carrito - Réplica exacta del Navbar principal */}
+        <div className="w-full bg-white border-b border-gray-100 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0 z-10 shadow-xs">
+          {/* Logo TORCOROMA idéntico al Navbar */}
+          <span className="text-xl sm:text-2xl font-black tracking-[2px] text-gray-900 select-none">
+            TORCOROMA
+          </span>
+
+          {/* Iconos derechos idénticos al Navbar en estado menú/scrolled */}
+          <div className="flex items-center gap-3 sm:gap-4 text-gray-900">
+            {/* Icono de búsqueda */}
+            <button 
+              type="button"
+              className="p-1 text-gray-900 hover:text-[#F5C227] transition-colors cursor-pointer"
+              aria-label="Buscar"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
+            {/* Icono de bolsa con badge de ítems */}
+            <button 
+              type="button"
+              onClick={toggleDrawer}
+              className="relative p-1 text-gray-900 hover:text-[#F5C227] transition-colors cursor-pointer"
+              aria-label="Carrito de compras"
+              title="Cerrar carrito"
+            >
               <ShoppingBag className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-black text-gray-900 tracking-tight flex items-center gap-2">
-                TU CARRITO
-                {itemsCount > 0 && (
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
-                    {itemsCount} {itemsCount === 1 ? 'ítem' : 'ítems'}
-                  </span>
-                )}
-              </h2>
-            </div>
+              {itemsCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-[#F5C227] text-gray-900 text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center">
+                  {itemsCount}
+                </span>
+              )}
+            </button>
+
+            {/* Icono 'X' para cerrar el carrito */}
+            <button 
+              type="button"
+              onClick={toggleDrawer}
+              className="p-1 text-gray-900 hover:text-[#F5C227] transition-colors cursor-pointer active:scale-95"
+              aria-label="Cerrar carrito"
+              title="Cerrar carrito"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
-          <button 
-            onClick={toggleDrawer}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 cursor-pointer"
-            aria-label="Cerrar carrito"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Barra de Envío Gratis */}
-        <div className="px-6 py-3 bg-gray-50 border-b border-gray-100 text-xs">
+        <div className="px-5 sm:px-6 py-3 bg-gray-50 border-b border-gray-100 text-xs flex-shrink-0">
           <div className="flex items-center justify-between font-semibold text-gray-700 mb-1.5">
             <span className="flex items-center gap-1.5">
               <Truck className="w-4 h-4 text-[#F5C227]" />
@@ -205,7 +254,7 @@ export default function CartDrawer() {
 
         {/* Footer y Checkout */}
         {cart.length > 0 && (
-          <div className="p-6 border-t border-gray-100 bg-white space-y-4 shadow-lg">
+          <div className="p-5 sm:p-6 border-t border-gray-100 bg-white space-y-3.5 sm:space-y-4 shadow-lg flex-shrink-0 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             {/* Desglose de Precios */}
             <div className="space-y-1.5 text-xs">
               <div className="flex justify-between text-gray-500 font-medium">
@@ -233,6 +282,15 @@ export default function CartDrawer() {
             >
               <span>Hacer pedido por WhatsApp</span>
               <ArrowRight className="w-4 h-4" />
+            </button>
+
+            {/* Botón Secundario: Seguir viendo calzado / Volver a la tienda */}
+            <button 
+              onClick={toggleDrawer}
+              className="w-full py-3 rounded-xl border border-gray-200 hover:border-gray-300 bg-gray-50 hover:bg-gray-100 active:scale-[0.99] text-gray-700 hover:text-gray-900 font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Seguir viendo calzado</span>
             </button>
 
             {/* Garantía y Seguridad */}

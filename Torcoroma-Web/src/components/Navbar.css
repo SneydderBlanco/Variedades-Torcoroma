@@ -17,7 +17,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-/* Cuando el lightbox de imagen ampliada está abierto, ocultar la barra de navegación completamente en cualquier pantalla */
+/* Cuando el carrito de compras o lightbox de imagen ampliada está abierto, ocultar la barra de navegación completamente */
+body.cart-open .navbar,
 body.lightbox-open .navbar {
   opacity: 0 !important;
   visibility: hidden !important;

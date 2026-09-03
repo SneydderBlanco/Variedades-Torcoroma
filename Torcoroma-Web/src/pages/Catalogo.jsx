@@ -1,48 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Heart, Sparkles } from 'lucide-react';
+import { getProductosWeb, subscribeToEcommerceUpdates } from '../services/ecommerceService';
+import { getOptimizedImgUrl } from '../utils/imageOptimizer';
 import './Catalogo.css';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
-
 
 export default function Catalogo() {
   const { categoria } = useParams();
-  const [productos, setProductos] = useState([]);
+  const [allProductos, setAllProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isWarmingUp, setIsWarmingUp] = useState(false);
 
   useEffect(() => {
-    const fetchProductos = async () => {
-      setLoading(true);
+    let isMounted = true;
+
+    const loadData = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/ecommerce/productos`);
-        if (res.ok) {
-          const data = await res.json();
-          // Filtrar por categoría si no es la vista general
-          let filtrados = data;
-          if (categoria) {
-            filtrados = data.filter(p => {
-              const catName = p.categoria_nombre?.toLowerCase() || '';
-              const routeCat = categoria.toLowerCase();
-              
-              if ((routeCat === 'hombre' || routeCat === 'mujer') && catName === 'unisex') {
-                return true;
-              }
-              
-              return catName === routeCat;
-            });
+        const data = await getProductosWeb({
+          onWarmupNotice: (warming) => {
+            if (isMounted) setIsWarmingUp(warming);
           }
-          setProductos(filtrados);
+        });
+        if (isMounted) {
+          setAllProductos(data || []);
+          setLoading(false);
+          setIsWarmingUp(false);
         }
       } catch (error) {
         console.error("Error al cargar el catálogo", error);
-      } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
-    fetchProductos();
-  }, [categoria]);
+
+    loadData();
+
+    // Suscribirse a actualizaciones en background (SWR)
+    const unsubscribe = subscribeToEcommerceUpdates((type, data) => {
+      if (type === 'productos' && isMounted) {
+        setAllProductos(data);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  // Filtrado instantáneo en cliente sin re-fetch al cambiar de categoría
+  const productosFiltrados = useMemo(() => {
+    if (!categoria) return allProductos;
+
+    const routeCat = categoria.toLowerCase();
+    return allProductos.filter(p => {
+      const catName = p.categoria_nombre?.toLowerCase() || '';
+      if ((routeCat === 'hombre' || routeCat === 'mujer') && catName === 'unisex') {
+        return true;
+      }
+      return catName === routeCat;
+    });
+  }, [allProductos, categoria]);
 
   return (
     <div className="catalogo-page container section-padding mt-20">
@@ -53,30 +70,47 @@ export default function Catalogo() {
         <p className="catalogo-subtitle">Descubre nuestra exclusiva selección de calzado.</p>
       </div>
 
-      {loading ? (
+      {/* Aviso amigable si el servidor está despertando por primera vez (Render cold start) */}
+      {isWarmingUp && loading && (
+        <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm flex items-center gap-3 shadow-xs">
+          <div className="animate-spin w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full flex-shrink-0"></div>
+          <div>
+            <p className="font-semibold flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-600" /> Conectando con el catálogo de Torcoroma...
+            </p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              El servidor se está iniciando por primera vez, tomará solo unos segundos.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {loading && allProductos.length === 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
             <div key={i} className="aspect-square bg-gray-100 rounded-sm animate-pulse"></div>
           ))}
         </div>
-      ) : productos.length === 0 ? (
+      ) : productosFiltrados.length === 0 ? (
         <div className="no-products">
           No hay productos disponibles en esta categoría por ahora.
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
-          {productos.map(prod => (
+          {productosFiltrados.map(prod => (
             <Link 
               to={`/producto/${prod.id_modelo}?color=${encodeURIComponent(prod.color_nombre)}`} 
               key={`${prod.id_modelo}-${prod.color_nombre}`} 
               className="group flex flex-col cursor-pointer transition-transform duration-200 hover:-translate-y-1 text-left"
             >
-              {/* Contenedor de Imagen */}
+              {/* Contenedor de Imagen optimizada */}
               <div className="relative aspect-square w-full bg-gray-100 rounded-sm overflow-hidden flex items-center justify-center">
                 {prod.imagen_principal ? (
                   <img 
-                    src={getImgUrl(prod.imagen_principal)} 
+                    src={getOptimizedImgUrl(prod.imagen_principal, 500)} 
                     alt={prod.modelo_nombre} 
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" 
                   />
                 ) : (

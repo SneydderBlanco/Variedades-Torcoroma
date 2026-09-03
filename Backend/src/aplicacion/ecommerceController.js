@@ -1,10 +1,42 @@
 import pool from '../config/db.js';
 
+// Caché en memoria para optimizar tiempos de respuesta (< 10ms)
+const memoryCache = {
+  productos: null,
+  productosTime: 0,
+  categorias: null,
+  categoriasTime: 0,
+  config: null,
+  configTime: 0,
+  TTL_PRODUCTOS: 60 * 1000,   // 1 minuto
+  TTL_CATEGORIAS: 120 * 1000, // 2 minutos
+  TTL_CONFIG: 120 * 1000      // 2 minutos
+};
+
+export const invalidateEcommerceCache = () => {
+  memoryCache.productos = null;
+  memoryCache.productosTime = 0;
+  memoryCache.categorias = null;
+  memoryCache.categoriasTime = 0;
+  memoryCache.config = null;
+  memoryCache.configTime = 0;
+};
+
 export class EcommerceController {
   
   async getCategorias(req, res) {
     try {
+      const now = Date.now();
+      if (memoryCache.categorias && (now - memoryCache.categoriasTime < memoryCache.TTL_CATEGORIAS)) {
+        res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+        return res.json(memoryCache.categorias);
+      }
+
       const result = await pool.query('SELECT * FROM ecommerce_categoria ORDER BY nombre ASC');
+      memoryCache.categorias = result.rows;
+      memoryCache.categoriasTime = now;
+
+      res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
       res.json(result.rows);
     } catch (error) {
       console.error('Error al obtener categorías:', error);
@@ -14,6 +46,13 @@ export class EcommerceController {
 
   async getProductosWeb(req, res) {
     try {
+      const now = Date.now();
+      if (memoryCache.productos && (now - memoryCache.productosTime < memoryCache.TTL_PRODUCTOS)) {
+        res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+        return res.json(memoryCache.productos);
+      }
+
+      // Consulta unificada optimizada con LEFT JOIN LATERAL para adjuntar directamente la imagen correspondiente
       const query = `
         SELECT 
           m.id_modelo, m.nombre AS modelo_nombre,
@@ -24,29 +63,29 @@ export class EcommerceController {
           ew.precio_web,
           ew.color_nombre,
           ew.id_categoria, c.nombre AS categoria_nombre,
-          ew.titulo_web, ew.descripcion, ew.precio_oferta, ew.destacado
+          ew.titulo_web, ew.descripcion, ew.precio_oferta, ew.destacado,
+          img.ruta_imagen AS imagen_principal
         FROM ecommerce_producto_web ew
         JOIN modelo m ON ew.id_modelo = m.id_modelo
         LEFT JOIN ecommerce_categoria c ON ew.id_categoria = c.id_categoria
+        LEFT JOIN LATERAL (
+          SELECT ei.ruta_imagen
+          FROM ecommerce_imagen ei
+          WHERE ei.id_modelo = ew.id_modelo 
+            AND (ei.color_nombre = ew.color_nombre OR ei.color_nombre IS NULL)
+          ORDER BY (ei.color_nombre = ew.color_nombre) DESC, ei.orden ASC, ei.id_imagen ASC
+          LIMIT 1
+        ) img ON true
         WHERE ew.activo_web = true AND m.id_modelo != 999999
-        ORDER BY ew.destacado DESC, m.nombre ASC, ew.color_nombre ASC
+        ORDER BY ew.destacado DESC, m.nombre ASC, ew.color_nombre ASC;
       `;
       const result = await pool.query(query);
 
-      // Adjuntar la primera imagen de cada producto
-      const imgsQuery = await pool.query('SELECT id_modelo, color_nombre, ruta_imagen FROM ecommerce_imagen ORDER BY orden ASC');
-      
-      const productos = result.rows.map(prod => {
-        // Find image for this exact model and color, fallback to model-only image
-        const img = imgsQuery.rows.find(i => i.id_modelo === prod.id_modelo && i.color_nombre === prod.color_nombre) || 
-                    imgsQuery.rows.find(i => i.id_modelo === prod.id_modelo);
-        return {
-          ...prod,
-          imagen_principal: img ? img.ruta_imagen : null
-        };
-      });
+      memoryCache.productos = result.rows;
+      memoryCache.productosTime = now;
 
-      res.json(productos);
+      res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+      res.json(result.rows);
     } catch (error) {
       console.error('Error al obtener productos web:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
@@ -170,6 +209,7 @@ export class EcommerceController {
       const { id_modelo } = req.params;
       const { color } = req.query;
       await pool.query('DELETE FROM ecommerce_producto_web WHERE id_modelo = $1 AND color_nombre = $2', [id_modelo, color]);
+      invalidateEcommerceCache();
       res.json({ message: 'Producto quitado del gestor web' });
     } catch (error) {
       console.error('Error al eliminar producto web:', error);
@@ -254,6 +294,7 @@ export class EcommerceController {
         activo_web || false
       ]);
       
+      invalidateEcommerceCache();
       res.json({ message: 'Producto web actualizado' });
     } catch (error) {
       console.error('Error al actualizar producto web:', error);
@@ -277,6 +318,7 @@ export class EcommerceController {
         [id_modelo, ruta_imagen, color || null]
       );
       
+      invalidateEcommerceCache();
       res.json({ message: 'Imagen subida correctamente', ruta_imagen, color_nombre: color });
     } catch (error) {
       console.error('Error subiendo imagen:', error);
@@ -289,6 +331,7 @@ export class EcommerceController {
       const { id_imagen } = req.params;
       // Idealmente, también borramos el archivo físico usando fs.unlink, pero lo omitimos por simplicidad ahora
       await pool.query('DELETE FROM ecommerce_imagen WHERE id_imagen = $1', [id_imagen]);
+      invalidateEcommerceCache();
       res.json({ message: 'Imagen eliminada' });
     } catch (error) {
       res.status(500).json({ error: 'Error al eliminar imagen' });
@@ -298,8 +341,16 @@ export class EcommerceController {
   // ================= CONFIGURACIÓN WEB =================
   async getConfig(req, res) {
     try {
+      const now = Date.now();
+      if (memoryCache.config && (now - memoryCache.configTime < memoryCache.TTL_CONFIG)) {
+        res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+        return res.json(memoryCache.config);
+      }
       const result = await pool.query('SELECT * FROM configuracion_web WHERE id = 1');
       if (result.rows.length === 0) return res.status(404).json({ error: 'Configuración no encontrada' });
+      memoryCache.config = result.rows[0];
+      memoryCache.configTime = now;
+      res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error al obtener config:', error);
@@ -333,6 +384,7 @@ export class EcommerceController {
 
       updateQuery += ` WHERE id = 1 RETURNING *`;
       const result = await pool.query(updateQuery, params);
+      invalidateEcommerceCache();
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error al actualizar config:', error);
