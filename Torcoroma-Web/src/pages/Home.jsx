@@ -159,13 +159,15 @@ export default function Home() {
 
       {/* BANNER PROMOCIONAL */}
       <section 
-        className="promo-banner container section-padding"
+        className="promo-banner container"
         style={webConfig?.promo_img ? { backgroundImage: `url(${getImgUrl(webConfig.promo_img)})` } : {}}
       >
+        <div className="promo-overlay"></div>
         <div className="promo-content glass">
+          <span className="promo-badge">OFERTA ESPECIAL</span>
           <h2>{webConfig?.promo_title || 'Estilo y Confort sin Compromisos.'}</h2>
           <p>{webConfig?.promo_text || 'Encuentra tu talla ideal con nuestro sistema de inventario en vivo.'}</p>
-          <Link to="/catalogo" className="btn btn-primary mt-4">Explorar Colección</Link>
+          <Link to="/catalogo" className="btn btn-primary mt-2">Explorar Colección</Link>
         </div>
       </section>
     </div>

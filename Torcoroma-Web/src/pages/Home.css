@@ -236,25 +236,78 @@
 
 /* PROMO BANNER */
 .promo-banner {
-  background: url('https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?q=80&w=2025&auto=format&fit=crop') center/cover fixed;
-  border-radius: 2rem;
-  margin: 0 auto;
+  position: relative;
+  background-color: var(--color-primary);
+  background-image: url('https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?q=80&w=2025&auto=format&fit=crop');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  border-radius: 1.75rem;
+  margin: 3.5rem auto;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 350px;
+  min-height: 320px;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+}
+
+.promo-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.12);
+  pointer-events: none;
 }
 
 .promo-content {
-  max-width: 500px;
-  padding: 4rem;
-  border-radius: 1.5rem;
+  position: relative;
+  z-index: 2;
+  max-width: 480px;
+  width: 90%;
+  padding: 2rem 2.5rem;
+  border-radius: 1.25rem;
   text-align: center;
   margin: 0 auto;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.promo-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #b45309;
+  background: rgba(245, 194, 39, 0.22);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  margin-bottom: 0.75rem;
 }
 
 .promo-content h2 {
-  font-size: 2.5rem;
-  font-weight: 900;
-  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 0.6rem;
   color: var(--color-primary);
+  letter-spacing: -0.5px;
+}
+
+.promo-content p {
+  font-size: 0.925rem;
+  color: #4b5563;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+
+.promo-content .btn {
+  padding: 0.7rem 1.75rem;
+  font-size: 0.825rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 @media (max-width: 768px) {
@@ -268,9 +321,30 @@
   .section-title { font-size: 1.5rem; }
 
   .product-info { padding: 0.5rem 0; }
-  .promo-banner { border-radius: 1rem; }
-  .promo-content { padding: 2rem 1rem; }
-  .promo-content h2 { font-size: 1.75rem; }
+  .promo-banner {
+    height: auto;
+    min-height: 280px;
+    padding: 2.5rem 1rem;
+    border-radius: 1.25rem;
+    margin: 2.5rem auto;
+  }
+  .promo-content {
+    width: 100%;
+    max-width: 100%;
+    padding: 1.75rem 1.25rem;
+    border-radius: 1rem;
+  }
+  .promo-content h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0.5rem;
+  }
+  .promo-content p {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+  .promo-content .btn {
+    width: 100%;
+  }
 }
 
 .product-color-clean {

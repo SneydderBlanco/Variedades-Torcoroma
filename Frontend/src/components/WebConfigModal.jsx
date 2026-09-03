@@ -177,6 +177,7 @@ export default function WebConfigModal({ onClose }) {
                     <input type="file" accept="image/*" className="hidden" onChange={handlePromoUpload} />
                   </label>
                 </div>
+                <span className="text-[11px] text-gray-400 block mt-1">Recomendado: Imagen horizontal panorámica (ej. 1200 x 400 px)</span>
               </div>
             </div>
           </div>

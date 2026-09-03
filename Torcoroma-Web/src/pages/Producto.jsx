@@ -211,19 +211,21 @@ export default function Producto() {
                   className="flex h-full w-full will-change-transform cursor-zoom-in"
                   style={{
                     transform: `translateX(calc(-${currentImageIdx * 100}% + ${dragOffset}px))`,
-                    transition: isDragging ? 'none' : 'transform 320ms cubic-bezier(0.25, 1, 0.5, 1)'
+                    transition: isDragging ? 'none' : 'transform 420ms cubic-bezier(0.16, 1, 0.3, 1)'
                   }}
                 >
                   {imagenesMostrar.map((img, idx) => (
                     <div 
                       key={idx} 
-                      className="w-full h-full flex-shrink-0 flex items-center justify-center p-2 sm:p-4"
+                      className={`w-full h-full flex-shrink-0 flex items-center justify-center p-2 sm:p-4 transition-all duration-500 ease-out ${
+                        idx === currentImageIdx ? 'opacity-100 scale-100' : 'opacity-35 scale-95'
+                      }`}
                       onClick={() => handleSlideClick(idx)}
                     >
                       <img 
                         src={getImgUrl(img)} 
                         alt={`${producto.titulo_web || producto.modelo_nombre} - vista ${idx + 1}`} 
-                        className="w-full h-full object-contain pointer-events-none select-none transition-transform duration-300"
+                        className="w-full h-full object-contain pointer-events-none select-none transition-transform duration-500"
                         draggable={false}
                       />
                     </div>
@@ -233,29 +235,29 @@ export default function Producto() {
                 {/* Botón flotante para abrir Modal / Zoom */}
                 <button
                   onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
-                  className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer opacity-90 hover:opacity-100 z-10"
+                  className="absolute bottom-3 right-3 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-800 flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer opacity-90 hover:opacity-100 hover:scale-110 active:scale-95 z-10 border border-black/5 backdrop-blur-xs"
                   title="Ver en pantalla completa"
                   aria-label="Ampliar imagen"
                 >
-                  <Maximize2 className="w-4 h-4" />
+                  <Maximize2 className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
 
                 {/* Flechas de navegación (si hay más de 1 imagen) */}
                 {imagenesMostrar.length > 1 && (
                   <>
                     <button 
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer active:scale-95 z-10"
+                      className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-900 flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer active:scale-90 hover:scale-105 z-10 border border-black/5 backdrop-blur-xs group"
                       onClick={(e) => { e.stopPropagation(); prevImage(); }}
                       aria-label="Imagen anterior"
                     >
-                      <ChevronLeft className="w-5 h-5" />
+                      <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform duration-200" />
                     </button>
                     <button 
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer active:scale-95 z-10"
+                      className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-900 flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer active:scale-90 hover:scale-105 z-10 border border-black/5 backdrop-blur-xs group"
                       onClick={(e) => { e.stopPropagation(); nextImage(); }}
                       aria-label="Siguiente imagen"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
                     </button>
                   </>
                 )}
@@ -397,49 +399,74 @@ export default function Producto() {
       {/* LIGHTBOX / MODAL DE AMPLIACIÓN FULLSCREEN CON SLIDER Y BOTÓN X FLOTANTE */}
       {isModalOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between select-none"
+          className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex flex-col justify-between select-none modal-lightbox-animate"
           onClick={() => setIsModalOpen(false)}
         >
-          {/* Botón Flotante X Destacado para Cerrar la Imagen Ampliada */}
+          {/* Botón Flotante X "Aesthetic" siempre visible y destacado en la esquina superior derecha */}
           <button 
             onClick={(e) => { e.stopPropagation(); setIsModalOpen(false); }}
-            className="fixed top-5 right-5 z-[100] w-12 h-12 rounded-full bg-black/70 hover:bg-black active:scale-95 text-white flex items-center justify-center cursor-pointer shadow-2xl backdrop-blur-md border border-white/20 transition-all duration-200"
+            className="fixed top-4 right-4 sm:top-6 sm:right-6 z-[100000] w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-white/15 hover:bg-white/25 active:scale-90 text-white flex items-center justify-center cursor-pointer shadow-2xl backdrop-blur-md border border-white/25 transition-all duration-300 group"
             aria-label="Cerrar imagen ampliada"
+            title="Cerrar (Esc)"
           >
-            <X className="w-7 h-7 text-white stroke-[2.5]" />
+            <X className="w-6 h-6 sm:w-7 sm:h-7 text-white group-hover:rotate-90 transition-transform duration-300 stroke-[2.5]" />
           </button>
 
           {/* Barra superior con contador */}
-          <div className="w-full px-6 py-5 flex items-center justify-between text-white z-20 pointer-events-none">
-            <span className="text-xs sm:text-sm font-bold tracking-widest uppercase bg-white/15 px-3.5 py-1.5 rounded-full backdrop-blur-xs border border-white/10">
-              {currentImageIdx + 1} / {imagenesMostrar.length}
-            </span>
+          <div className="w-full px-5 py-4 sm:px-8 sm:py-6 flex items-center justify-between text-white z-20 pointer-events-none">
+            <div className="flex items-center gap-3">
+              <span className="text-xs sm:text-sm font-black tracking-widest uppercase bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-md border border-white/15 shadow-sm">
+                {currentImageIdx + 1} / {imagenesMostrar.length}
+              </span>
+              <span className="hidden sm:inline-block text-xs text-gray-400 font-medium tracking-wide">
+                Usa las flechas o desliza para navegar • Presiona Esc o toca afuera para salir
+              </span>
+            </div>
           </div>
 
           {/* Contenedor central con Track Deslizante para el Modal */}
           <div 
-            className="relative flex-1 w-full flex items-center justify-center overflow-hidden"
+            className="relative flex-1 w-full flex items-center justify-center overflow-hidden cursor-pointer"
             onTouchStart={handleModalTouchStart}
             onTouchMove={handleModalTouchMove}
             onTouchEnd={handleModalTouchEnd}
-            onClick={(e) => e.stopPropagation()}
+            onClick={() => setIsModalOpen(false)}
           >
             {imagenesMostrar.length > 0 && (
               <div 
-                className="flex h-full w-full items-center will-change-transform"
+                className="flex h-full w-full items-center will-change-transform pointer-events-none"
                 style={{
                   transform: `translateX(calc(-${currentImageIdx * 100}% + ${modalDragOffset}px))`,
-                  transition: isModalDragging ? 'none' : 'transform 320ms cubic-bezier(0.25, 1, 0.5, 1)'
+                  transition: isModalDragging ? 'none' : 'transform 420ms cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
               >
                 {imagenesMostrar.map((img, idx) => (
-                  <div key={idx} className="w-full h-full flex-shrink-0 flex items-center justify-center p-4 sm:p-8">
-                    <img 
-                      src={getImgUrl(img)} 
-                      alt={`${producto.titulo_web || producto.modelo_nombre} - ampliada ${idx + 1}`} 
-                      className="max-h-[80vh] max-w-[95vw] object-contain rounded-lg transition-all duration-300 touch-pinch-zoom shadow-2xl select-none" 
-                      draggable={false}
-                    />
+                  <div 
+                    key={idx} 
+                    className={`w-full h-full flex-shrink-0 flex items-center justify-center p-3 sm:p-8 transition-all duration-500 ease-out ${
+                      idx === currentImageIdx ? 'opacity-100 scale-100' : 'opacity-20 scale-90'
+                    }`}
+                  >
+                    <div 
+                      className="relative pointer-events-auto flex items-center justify-center group/photo"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <img 
+                        src={getImgUrl(img)} 
+                        alt={`${producto.titulo_web || producto.modelo_nombre} - ampliada ${idx + 1}`} 
+                        className="max-h-[78vh] sm:max-h-[80vh] max-w-[95vw] sm:max-w-[85vw] object-contain rounded-2xl transition-transform duration-500 touch-pinch-zoom shadow-2xl select-none" 
+                        draggable={false}
+                      />
+                      {/* Botón flotante X aesthetic directamente SOBRE la foto en la esquina superior derecha */}
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setIsModalOpen(false); }}
+                        className="absolute top-3 right-3 sm:top-4 sm:right-4 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center shadow-lg backdrop-blur-md border border-white/20 transition-all duration-200 cursor-pointer active:scale-90 hover:scale-105"
+                        title="Cerrar"
+                        aria-label="Cerrar imagen"
+                      >
+                        <X className="w-5 h-5 text-white stroke-[2.5]" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -450,17 +477,17 @@ export default function Producto() {
               <>
                 <button 
                   onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                  className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer z-30 active:scale-95 border border-white/15"
+                  className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/10 hover:bg-white/25 active:scale-90 text-white flex items-center justify-center backdrop-blur-md transition-all duration-200 cursor-pointer z-30 border border-white/20 shadow-xl group"
                   aria-label="Imagen anterior"
                 >
-                  <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
+                  <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7 group-hover:-translate-x-0.5 transition-transform duration-200" />
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                  className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer z-30 active:scale-95 border border-white/15"
+                  className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white/10 hover:bg-white/25 active:scale-90 text-white flex items-center justify-center backdrop-blur-md transition-all duration-200 cursor-pointer z-30 border border-white/20 shadow-xl group"
                   aria-label="Siguiente imagen"
                 >
-                  <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
+                  <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7 group-hover:translate-x-0.5 transition-transform duration-200" />
                 </button>
               </>
             )}
@@ -469,15 +496,17 @@ export default function Producto() {
           {/* Tira inferior de miniaturas en el Modal */}
           {imagenesMostrar.length > 1 && (
             <div 
-              className="w-full px-4 py-5 flex items-center justify-center gap-2 overflow-x-auto z-20 bg-gradient-to-t from-black/80 to-transparent"
+              className="w-full px-4 py-4 sm:py-5 flex items-center justify-center gap-2.5 overflow-x-auto z-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent scrollbar-none"
               onClick={(e) => e.stopPropagation()}
             >
               {imagenesMostrar.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentImageIdx(idx)}
-                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/5 border-2 overflow-hidden flex-shrink-0 cursor-pointer transition-all p-1 ${
-                    idx === currentImageIdx ? 'border-white opacity-100 scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-80'
+                  className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-white/5 border-2 overflow-hidden flex-shrink-0 cursor-pointer transition-all duration-300 p-1 flex items-center justify-center ${
+                    idx === currentImageIdx 
+                      ? 'border-yellow-400 ring-2 ring-yellow-400/50 opacity-100 scale-110 shadow-2xl bg-white/10' 
+                      : 'border-white/10 opacity-40 hover:opacity-80 hover:scale-105'
                   }`}
                   aria-label={`Miniatura ${idx + 1}`}
                 >
