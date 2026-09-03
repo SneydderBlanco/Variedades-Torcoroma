@@ -5,6 +5,7 @@ import { ShoppingBag, Check, ChevronLeft, ChevronRight, Info, Heart, X, Maximize
 import { useCart } from '../context/CartContext';
 import { getOptimizedImgUrl } from '../utils/imageOptimizer';
 import { getProductosWeb } from '../services/ecommerceService';
+import WhatsAppButton from '../components/WhatsAppButton';
 import './Producto.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
@@ -431,6 +432,15 @@ export default function Producto() {
             <button className="wishlist-box">
               <Heart className="w-6 h-6" />
             </button>
+          </div>
+
+          {/* BOTÓN SECUNDARIO: PREGUNTAR POR WHATSAPP */}
+          <div className="mb-6 -mt-5">
+            <WhatsAppButton 
+              nombreModelo={producto.titulo_web || producto.modelo_nombre}
+              variant="outline"
+              className="w-full h-12 sm:h-13 rounded-sm text-xs sm:text-sm font-bold tracking-wider"
+            />
           </div>
 
           <div className="delivery-info">
