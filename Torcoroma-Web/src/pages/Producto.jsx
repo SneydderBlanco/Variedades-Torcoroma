@@ -402,16 +402,6 @@ export default function Producto() {
           className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex flex-col justify-between select-none modal-lightbox-animate"
           onClick={() => setIsModalOpen(false)}
         >
-          {/* Botón Flotante X "Aesthetic" siempre visible y destacado en la esquina superior derecha */}
-          <button 
-            onClick={(e) => { e.stopPropagation(); setIsModalOpen(false); }}
-            className="fixed top-4 right-4 sm:top-6 sm:right-6 z-[100000] w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-white/15 hover:bg-white/25 active:scale-90 text-white flex items-center justify-center cursor-pointer shadow-2xl backdrop-blur-md border border-white/25 transition-all duration-300 group"
-            aria-label="Cerrar imagen ampliada"
-            title="Cerrar (Esc)"
-          >
-            <X className="w-6 h-6 sm:w-7 sm:h-7 text-white group-hover:rotate-90 transition-transform duration-300 stroke-[2.5]" />
-          </button>
-
           {/* Barra superior con contador */}
           <div className="w-full px-5 py-4 sm:px-8 sm:py-6 flex items-center justify-between text-white z-20 pointer-events-none">
             <div className="flex items-center gap-3">
