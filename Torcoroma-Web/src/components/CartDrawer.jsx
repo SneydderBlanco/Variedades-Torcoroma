@@ -86,16 +86,15 @@ export default function CartDrawer() {
         aria-modal="true"
         role="dialog"
       >
-        {/* Encabezado del Carrito - Réplica exacta del Navbar principal */}
-        <div className="w-full bg-white border-b border-gray-100 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0 z-10 shadow-xs">
+        {/* Cabecera para MÓVIL (sm:hidden) - Réplica exacta del Navbar con TORCOROMA */}
+        <div className="flex sm:hidden w-full bg-white border-b border-gray-100 px-4 py-4 items-center justify-between flex-shrink-0 z-10 shadow-xs">
           {/* Logo TORCOROMA idéntico al Navbar */}
-          <span className="text-xl sm:text-2xl font-black tracking-[2px] text-gray-900 select-none">
+          <span className="text-xl font-black tracking-[2px] text-gray-900 select-none">
             TORCOROMA
           </span>
 
-          {/* Iconos derechos idénticos al Navbar en estado menú/scrolled */}
-          <div className="flex items-center gap-3 sm:gap-4 text-gray-900">
-            {/* Icono de búsqueda */}
+          {/* Iconos derechos idénticos al Navbar */}
+          <div className="flex items-center gap-3.5 text-gray-900">
             <button 
               type="button"
               className="p-1 text-gray-900 hover:text-[#F5C227] transition-colors cursor-pointer"
@@ -104,7 +103,6 @@ export default function CartDrawer() {
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Icono de bolsa con badge de ítems */}
             <button 
               type="button"
               onClick={toggleDrawer}
@@ -120,7 +118,6 @@ export default function CartDrawer() {
               )}
             </button>
 
-            {/* Icono 'X' para cerrar el carrito */}
             <button 
               type="button"
               onClick={toggleDrawer}
@@ -131,6 +128,32 @@ export default function CartDrawer() {
               <X className="w-6 h-6" />
             </button>
           </div>
+        </div>
+
+        {/* Cabecera para COMPUTADOR (hidden sm:flex) - Diseño original clásico */}
+        <div className="hidden sm:flex px-6 py-5 border-b border-gray-100 items-center justify-between bg-white flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gray-900 text-[#F5C227] flex items-center justify-center shadow-sm">
+              <ShoppingBag className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-black text-gray-900 tracking-tight flex items-center gap-2">
+                TU CARRITO
+                {itemsCount > 0 && (
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                    {itemsCount} {itemsCount === 1 ? 'ítem' : 'ítems'}
+                  </span>
+                )}
+              </h2>
+            </div>
+          </div>
+          <button 
+            onClick={toggleDrawer}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 cursor-pointer"
+            aria-label="Cerrar carrito"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Barra de Envío Gratis */}
