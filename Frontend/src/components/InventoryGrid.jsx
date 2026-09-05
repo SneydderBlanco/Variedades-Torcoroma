@@ -679,16 +679,27 @@ export default function InventoryGrid() {
           No hay modelos registrados en el sistema. Presione "Agregar Modelo" para comenzar.
         </div>
       ) : (
-        <div className="flex-grow overflow-x-auto rounded-xl border border-gray-200">
-          <table className="w-full border-collapse min-w-[1300px] text-sm">
-            <thead>
-              <tr className="bg-gray-100 text-torcoroma-dark font-extrabold text-center border-b border-gray-200 sticky top-0 z-10">
-                <th className="p-3 border-r border-gray-200 text-left min-w-[200px] bg-gray-100 sticky left-0 z-20">COLOR</th>
+        <div className="flex-grow overflow-auto rounded-xl border border-gray-200 max-h-[calc(100vh-340px)] min-h-[420px] relative shadow-sm">
+          <table className="w-full border-separate border-spacing-0 min-w-[1300px] text-sm">
+            <thead className="sticky top-0 z-20 shadow-sm">
+              <tr className="bg-gray-100 text-torcoroma-dark font-extrabold text-center">
+                <th className="p-3 border-r border-b border-gray-200 text-left min-w-[200px] bg-gray-100 sticky top-0 left-0 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                  COLOR
+                </th>
                 {TALLAS_RANGO.map(talla => (
-                  <th key={talla} className="p-3 border-r border-gray-200 w-11">{talla}</th>
+                  <th
+                    key={talla}
+                    className="p-3 border-r border-b border-gray-200 w-11 bg-gray-100 text-torcoroma-dark font-extrabold sticky top-0 z-20"
+                  >
+                    {talla}
+                  </th>
                 ))}
-                <th className="p-3 w-20 border-r border-gray-200 bg-yellow-100 text-torcoroma-gold font-black">TOTAL</th>
-                <th className="p-3 w-16 bg-gray-100 text-torcoroma-dark font-extrabold">ACCIONES</th>
+                <th className="p-3 w-20 border-r border-b border-gray-200 bg-yellow-100 text-torcoroma-gold font-black sticky top-0 z-20">
+                  TOTAL
+                </th>
+                <th className="p-3 w-16 border-b border-gray-200 bg-gray-100 text-torcoroma-dark font-extrabold sticky top-0 z-20">
+                  ACCIONES
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -700,7 +711,7 @@ export default function InventoryGrid() {
                   <tr key={`model-sep-${model.id_modelo}`} className="bg-yellow-50/50 border-y border-gray-200">
                     <td 
                       colSpan={TALLAS_RANGO.length + 3} 
-                      className="p-2.5 text-center font-extrabold text-torcoroma-dark bg-yellow-50/50 tracking-widest text-sm relative"
+                      className="p-2.5 text-center font-extrabold text-torcoroma-dark bg-[#fdf8ee] tracking-widest text-sm relative border-y border-gray-200"
                     >
                       <div className="flex items-center justify-center gap-4 relative">
                         <span>{model.nombre}</span>
@@ -765,7 +776,7 @@ export default function InventoryGrid() {
                               type="number"
                               min="0"
                               disabled={!isAdmin}
-                              className={`w-9 py-1 text-center font-semibold bg-transparent rounded border border-transparent outline-none transition text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                              className={`w-9 py-1 text-center font-semibold bg-transparent rounded border border-transparent outline-none transition text-sm scroll-mt-14 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                                 isAdmin ? 'focus:bg-white focus:border-torcoroma-gold focus:ring-1 focus:ring-torcoroma-gold' : 'cursor-not-allowed opacity-80'
                               }`}
                               value={displayVal}
@@ -807,7 +818,7 @@ export default function InventoryGrid() {
                 if (isAdmin) {
                   elements.push(
                     <tr key={`add-color-row-${model.id_modelo}`} className="border-b border-gray-200">
-                      <td colSpan={TALLAS_RANGO.length + 3} className="p-2 bg-gray-50/40 text-left pl-4">
+                      <td colSpan={TALLAS_RANGO.length + 3} className="p-2 bg-gray-50/40 text-left pl-4 border-b border-gray-200">
                         <button
                           onClick={() => handleOpenColorModal(model)}
                           className="text-xs font-bold text-gray-500 hover:text-torcoroma-gold flex items-center gap-1 cursor-pointer transition"

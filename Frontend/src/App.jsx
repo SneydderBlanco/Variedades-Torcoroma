@@ -401,7 +401,7 @@ export default function App() {
                 <FacturacionPanel userRole={user?.rol} initialTab={facturacionTab} initialDate={facturacionDate} />
               </div>
             ) : currentView === 'INVENTARIO' ? (
-              <div className="max-w-7xl mx-auto">
+              <div className="max-w-7xl mx-auto h-full flex flex-col">
                 <InventoryGrid />
               </div>
             ) : currentView === 'GASTOS' ? (
