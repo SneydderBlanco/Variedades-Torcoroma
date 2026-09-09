@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Landmark, Home, PlusCircle, Save, RefreshCw, X, AlertTriangle, Edit, Trash2, Truck, Image as ImageIcon, UploadCloud, CheckCircle } from 'lucide-react';
+import { Landmark, Home, PlusCircle, Plus, Save, RefreshCw, X, AlertTriangle, Edit, Trash2, Truck, Image as ImageIcon, UploadCloud, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import PermitidosPanel from './PermitidosPanel';
 import KardexPanel from './KardexPanel';
@@ -598,17 +598,26 @@ export default function InventoryGrid() {
   // Variable de mapeo para obtener el índice global de una fila
   let globalRowCounter = 0;
 
+  // Cálculo de totales rápidos para la barra de información
+  const totalModelos = inventoryMatrix.length;
+  const totalPares = inventoryMatrix.reduce((acc, m) => {
+    return acc + (m.colores || []).reduce((cAcc, c) => {
+      return cAcc + Object.values(c.tallas || {}).reduce((tAcc, v) => tAcc + (Number(v) || 0), 0);
+    }, 0);
+  }, 0);
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 flex flex-col h-full">
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-200/80 p-3 sm:p-5 flex flex-col w-full max-w-full min-w-0 min-h-0 flex-1 overflow-hidden transition-all">
       {/* Cabecera y selectores */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-gray-100 pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3 border-b border-gray-100 pb-2.5 flex-shrink-0">
         <div>
-          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Inventario y Stock</h2>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Inventario y Stock</h2>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1 font-medium">Control general de existencias, tallas y colores en tiempo real.</p>
         </div>
-        <div className="flex bg-gray-100 rounded-xl p-1 gap-1 self-start md:self-auto flex-wrap">
+        <div className="flex bg-gray-100 rounded-xl p-1 gap-1 self-start md:self-auto flex-wrap border border-gray-200/70">
           <button
             onClick={() => setActiveTab(2)}
-            className={`px-5 py-2.5 rounded-lg flex items-center gap-1.5 text-xs sm:text-sm font-bold tracking-wider transition-all cursor-pointer ${
+            className={`px-4 sm:px-5 py-2.5 rounded-lg flex items-center gap-1.5 text-xs sm:text-sm font-bold tracking-wider transition-all cursor-pointer ${
               activeTab === 2 ? 'bg-white text-torcoroma-dark shadow-sm' : 'text-gray-500 hover:text-gray-800'
             }`}
           >
@@ -617,7 +626,7 @@ export default function InventoryGrid() {
           </button>
           <button
             onClick={() => setActiveTab(1)}
-            className={`px-5 py-2.5 rounded-lg flex items-center gap-1.5 text-xs sm:text-sm font-bold tracking-wider transition-all cursor-pointer ${
+            className={`px-4 sm:px-5 py-2.5 rounded-lg flex items-center gap-1.5 text-xs sm:text-sm font-bold tracking-wider transition-all cursor-pointer ${
               activeTab === 1 ? 'bg-white text-torcoroma-dark shadow-sm' : 'text-gray-500 hover:text-gray-800'
             }`}
           >
@@ -627,7 +636,7 @@ export default function InventoryGrid() {
           {isAdmin && (
             <button
               onClick={() => setActiveTab(3)}
-              className={`px-5 py-2.5 rounded-lg flex items-center gap-1.5 text-xs sm:text-sm font-bold tracking-wider transition-all cursor-pointer ${
+              className={`px-4 sm:px-5 py-2.5 rounded-lg flex items-center gap-1.5 text-xs sm:text-sm font-bold tracking-wider transition-all cursor-pointer ${
                 activeTab === 3 ? 'bg-white text-torcoroma-dark shadow-sm' : 'text-gray-500 hover:text-gray-800'
               }`}
             >
@@ -645,41 +654,78 @@ export default function InventoryGrid() {
           {errorMsg}
         </div>
       )}
+      {successMsg && (
+        <div className="bg-emerald-50 text-emerald-800 rounded-xl p-3.5 border border-emerald-100 text-sm font-bold mb-4 flex items-center gap-2">
+          <CheckCircle className="w-5 h-5 flex-shrink-0 text-emerald-600" />
+          {successMsg}
+        </div>
+      )}
 
       {activeTab === 3 ? (
-        <KardexPanel />
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <KardexPanel />
+        </div>
       ) : activeTab === 1 ? (
-        <PermitidosPanel modelos={inventoryMatrix} fetchInventory={loadInventoryMatrix} />
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <PermitidosPanel modelos={inventoryMatrix} fetchInventory={loadInventoryMatrix} />
+        </div>
       ) : (
         <>
-          {/* Botón superior Agregar Modelo (Ajustado visualmente: sin [+]) */}
-      <div className="mb-4 flex justify-between items-center">
-        <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
-          Cuadrícula de Tallas (21 a 44)
-        </span>
-        {isAdmin && (
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-gray-900 text-white font-medium py-2 px-5 rounded-lg hover:bg-black hover:shadow-md transition-all flex items-center gap-2 text-sm cursor-pointer border border-gray-800"
-          >
-            <PlusCircle className="w-4 h-4" />
-            Agregar Modelo
-          </button>
-        )}
-      </div>
+          {/* Barra superior: Cuadrícula de Tallas y Acciones */}
+          <div className="mb-3 flex justify-between items-center flex-shrink-0">
+            <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
+              Cuadrícula de Tallas (21 a 44)
+            </span>
 
-      {/* Grid horizontal con scroll */}
-      {loading && inventoryMatrix.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-500 gap-3">
-          <RefreshCw className="animate-spin w-8 h-8 text-torcoroma-gold" />
-          <span className="font-medium">Cargando matriz de inventario...</span>
-        </div>
-      ) : inventoryMatrix.length === 0 ? (
-        <div className="text-center py-20 text-gray-400 italic text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-          No hay modelos registrados en el sistema. Presione "Agregar Modelo" para comenzar.
-        </div>
-      ) : (
-        <div className="flex-grow overflow-auto rounded-xl border border-gray-200 max-h-[calc(100vh-340px)] min-h-[420px] relative shadow-sm">
+            <div className="flex items-center gap-3">
+              {/* Estado de sincronización automático */}
+              {isAdmin && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 select-none shadow-xs">
+                  {isAutoSaving ? (
+                    <span className="flex items-center gap-1.5 text-amber-600">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-torcoroma-gold" /> Guardando...
+                    </span>
+                  ) : Object.keys(modifiedRows).length > 0 ? (
+                    <span className="flex items-center gap-1.5 text-amber-500">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" /> Esperando...
+                    </span>
+                  ) : lastSaved ? (
+                    <span className="flex items-center gap-1.5 text-emerald-600">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Guardado automático
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-emerald-600">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Stock sincronizado
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Botón Agregar Modelo */}
+              {isAdmin && (
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="bg-torcoroma-dark hover:bg-black text-white font-extrabold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Agregar Modelo</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Grid horizontal con scroll */}
+          {loading && inventoryMatrix.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-500 gap-3 flex-grow min-h-[300px]">
+              <RefreshCw className="animate-spin w-8 h-8 text-torcoroma-gold" />
+              <span className="font-medium">Cargando matriz de inventario...</span>
+            </div>
+          ) : inventoryMatrix.length === 0 ? (
+            <div className="text-center py-20 text-gray-400 italic text-sm border border-dashed border-gray-200 rounded-xl bg-gray-50/50 flex-grow flex items-center justify-center min-h-[300px]">
+              No hay modelos registrados en el sistema. Presione "Agregar Modelo" para comenzar.
+            </div>
+          ) : (
+            <div className="w-full max-w-full min-w-0 flex-1 min-h-0 overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm relative">
           <table className="w-full border-separate border-spacing-0 min-w-[1300px] text-sm">
             <thead className="sticky top-0 z-20 shadow-sm">
               <tr className="bg-gray-100 text-torcoroma-dark font-extrabold text-center">
@@ -838,43 +884,6 @@ export default function InventoryGrid() {
         </div>
       )}
 
-      {/* Acciones al pie */}
-      {!loading && (
-        <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-t border-gray-100 pt-6">
-          <button
-            onClick={loadInventoryMatrix}
-            className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 flex items-center justify-center gap-1.5 cursor-pointer text-sm"
-          >
-            <RefreshCw className="w-4 h-4" /> Recargar Matriz
-          </button>
-          
-          {successMsg && (
-            <div className="text-emerald-600 font-bold text-sm bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
-              {successMsg}
-            </div>
-          )}
-
-          {isAdmin && (
-            <div className="flex items-center justify-center min-w-[200px] h-[52px] bg-gray-50 border border-gray-200 rounded-xl px-6">
-              {isAutoSaving ? (
-                <span className="flex items-center gap-2 text-torcoroma-gold font-bold text-sm">
-                  <RefreshCw className="w-5 h-5 animate-spin" /> Guardando...
-                </span>
-              ) : Object.keys(modifiedRows).length > 0 ? (
-                <span className="flex items-center gap-2 text-gray-500 font-bold text-sm">
-                  <RefreshCw className="w-5 h-5 text-gray-400 animate-spin" /> Esperando...
-                </span>
-              ) : lastSaved ? (
-                <span className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
-                  <CheckCircle className="w-5 h-5" /> Guardado automático
-                </span>
-              ) : (
-                <span className="text-gray-400 font-bold text-sm">Stock sincronizado</span>
-              )}
-            </div>
-          )}
-        </div>
-      )}
       </>
       )}
 

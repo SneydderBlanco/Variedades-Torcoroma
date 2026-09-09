@@ -341,16 +341,9 @@ export class EcommerceController {
   // ================= CONFIGURACIÓN WEB =================
   async getConfig(req, res) {
     try {
-      const now = Date.now();
-      if (memoryCache.config && (now - memoryCache.configTime < memoryCache.TTL_CONFIG)) {
-        res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
-        return res.json(memoryCache.config);
-      }
       const result = await pool.query('SELECT * FROM configuracion_web WHERE id = 1');
       if (result.rows.length === 0) return res.status(404).json({ error: 'Configuración no encontrada' });
-      memoryCache.config = result.rows[0];
-      memoryCache.configTime = now;
-      res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error al obtener config:', error);

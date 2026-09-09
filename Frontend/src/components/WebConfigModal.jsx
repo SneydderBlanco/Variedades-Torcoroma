@@ -2,7 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { X, UploadCloud, Image as ImageIcon, Save, Layout } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-const getImgUrl = (path) => path ? (path.startsWith('http') ? path : `${API_URL}${path}`) : '';
+const getImgUrl = (path, width = 800) => {
+  if (!path) return '';
+  if (typeof path === 'string' && path.includes('res.cloudinary.com') && path.includes('/upload/')) {
+    if (!path.includes('/upload/f_auto') && !path.includes('/upload/w_')) {
+      return path.replace('/upload/', `/upload/f_auto,q_auto,w_${width},c_limit/`);
+    }
+  }
+  return path.startsWith('http') ? path : `${API_URL}${path}`;
+};
 
 
 export default function WebConfigModal({ onClose }) {
@@ -29,7 +37,7 @@ export default function WebConfigModal({ onClose }) {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/ecommerce/config`);
+      const res = await fetch(`${API_URL}/api/ecommerce/config?_t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setConfig(data);
@@ -129,7 +137,13 @@ export default function WebConfigModal({ onClose }) {
                 <label className="text-xs font-black text-gray-600 mb-1 block uppercase">Fondo del Banner</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-xl overflow-hidden relative bg-gray-50 h-48 flex items-center justify-center group">
                   {previewHero ? (
-                    <img src={previewHero} alt="Preview Hero" className="w-full h-full object-cover" />
+                    <img 
+                      src={previewHero} 
+                      alt="Preview Hero" 
+                      className="w-full h-full object-cover" 
+                      crossOrigin="anonymous" 
+                      referrerPolicy="no-referrer" 
+                    />
                   ) : (
                     <div className="text-gray-400 flex flex-col items-center">
                       <ImageIcon className="w-8 h-8 mb-2" />
@@ -165,7 +179,13 @@ export default function WebConfigModal({ onClose }) {
                 <label className="text-xs font-black text-gray-600 mb-1 block uppercase">Fondo Promocional</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-xl overflow-hidden relative bg-gray-50 h-32 flex items-center justify-center group">
                   {previewPromo ? (
-                    <img src={previewPromo} alt="Preview Promo" className="w-full h-full object-cover" />
+                    <img 
+                      src={previewPromo} 
+                      alt="Preview Promo" 
+                      className="w-full h-full object-cover" 
+                      crossOrigin="anonymous" 
+                      referrerPolicy="no-referrer" 
+                    />
                   ) : (
                     <div className="text-gray-400 flex flex-col items-center">
                       <ImageIcon className="w-6 h-6 mb-1" />

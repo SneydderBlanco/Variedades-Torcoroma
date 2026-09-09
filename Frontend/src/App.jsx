@@ -323,7 +323,7 @@ export default function App() {
       </aside>
 
       {/* Contenedor del Contenido Principal a la Derecha */}
-      <main className="flex-grow h-screen overflow-y-auto flex flex-col">
+      <main className="flex-grow min-w-0 h-screen overflow-hidden flex flex-col">
           {/* Encabezado contextual superior */}
           <div className="bg-white border-b border-gray-200 py-5 px-8 flex items-center justify-between flex-shrink-0">
             <h2 className="text-lg font-bold tracking-tight text-torcoroma-dark">
@@ -357,7 +357,9 @@ export default function App() {
           </div>
 
           {/* Área del cuerpo de la aplicación */}
-          <div className="flex-grow p-8 overflow-y-auto">
+          <div className={`flex-grow min-w-0 max-w-full flex flex-col min-h-0 ${
+            currentView === 'INVENTARIO' ? 'p-3 sm:p-4 lg:p-6 overflow-hidden' : 'p-4 sm:p-6 lg:p-8 overflow-y-auto'
+          }`}>
             {currentView === 'DASHBOARD' ? (
               <div className="max-w-7xl mx-auto">
                 <DashboardPanel onNavigate={(view, extra, date) => {
@@ -401,7 +403,7 @@ export default function App() {
                 <FacturacionPanel userRole={user?.rol} initialTab={facturacionTab} initialDate={facturacionDate} />
               </div>
             ) : currentView === 'INVENTARIO' ? (
-              <div className="max-w-7xl mx-auto h-full flex flex-col">
+              <div className="w-full flex flex-col flex-1 min-w-0 min-h-0 h-full">
                 <InventoryGrid />
               </div>
             ) : currentView === 'GASTOS' ? (

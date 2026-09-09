@@ -440,7 +440,13 @@ export default function EcommercePanel() {
                       ) : (
                         imagenes.map(img => (
                           <div key={img.id_imagen} className="relative w-24 h-24 flex-shrink-0 rounded-xl border border-gray-200 overflow-hidden snap-center bg-white group">
-                            <img src={getImgUrl(img.ruta_imagen)} className="w-full h-full object-contain" alt="Zapato" />
+                            <img 
+                              src={getImgUrl(img.ruta_imagen)} 
+                              className="w-full h-full object-contain" 
+                              alt="Zapato" 
+                              crossOrigin="anonymous" 
+                              referrerPolicy="no-referrer" 
+                            />
                             <button 
                               onClick={() => handleDeleteImage(img.id_imagen)}
                               className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100 z-10"
