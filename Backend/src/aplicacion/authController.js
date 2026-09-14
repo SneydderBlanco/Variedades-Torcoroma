@@ -27,11 +27,11 @@ export class AuthController {
         return res.status(401).json({ error: 'Credenciales inválidas.' });
       }
 
-      // Firmar token JWT (expira en 24 horas)
+      // Firmar token JWT (expira en 30 días para terminales de tienda)
       const token = jwt.sign(
         { id: user.id_usuario, username: user.username, rol: user.rol },
         JWT_SECRET,
-        { expiresIn: '24h' }
+        { expiresIn: '30d' }
       );
 
       // Responder con token y detalles de usuario

@@ -4,6 +4,21 @@ const AuthContext = createContext();
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
+// Función para verificar si un token JWT ha expirado
+export const isTokenExpired = (token) => {
+  if (!token) return true;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    const payload = JSON.parse(atob(parts[1]));
+    if (!payload.exp) return false;
+    // Si expira en menos de 5 segundos, considerarlo expirado
+    return payload.exp * 1000 < Date.now() + 5000;
+  } catch {
+    return true;
+  }
+};
+
 // Interceptor global de fetch para inyectar el token JWT en todas las peticiones
 const originalFetch = window.fetch;
 window.fetch = async (url, options = {}) => {
@@ -37,8 +52,21 @@ window.fetch = async (url, options = {}) => {
 };
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+  const [token, setToken] = useState(() => {
+    const stored = localStorage.getItem('token');
+    if (!stored || isTokenExpired(stored)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      return null;
+    }
+    return stored;
+  });
+
   const [user, setUser] = useState(() => {
+    const storedToken = localStorage.getItem('token');
+    if (!storedToken || isTokenExpired(storedToken)) {
+      return null;
+    }
     const storedUser = localStorage.getItem('user');
     try {
       return storedUser ? JSON.parse(storedUser) : null;

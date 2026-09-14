@@ -15,7 +15,15 @@ import LoginScreen from './components/LoginScreen';
 
 export default function App() {
   const { user, isAuthenticated, logout } = useAuth();
-  const [currentView, setCurrentView] = useState('DASHBOARD'); // 'DASHBOARD', 'POS', 'INVENTARIO', 'PROVEEDORES'
+  const [currentView, setCurrentView] = useState(() => {
+    try {
+      const storedUser = localStorage.getItem('user');
+      const u = storedUser ? JSON.parse(storedUser) : null;
+      return u?.rol === 'EMPLEADO' ? 'POS' : 'DASHBOARD';
+    } catch {
+      return 'DASHBOARD';
+    }
+  });
   const [ticketItems, setTicketItems] = useState([]);
   const [facturacionTab, setFacturacionTab] = useState('LOCAL');
   const [facturacionDate, setFacturacionDate] = useState(null);
