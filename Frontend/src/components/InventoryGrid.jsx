@@ -205,6 +205,14 @@ export default function InventoryGrid() {
   const flatRows = getFlatColorRows();
   const totalColorRows = flatRows.length;
 
+  // Enfocar input y desplazar el scroll para mantenerlo visible
+  const focusInput = (target, inlineMode = 'nearest') => {
+    if (!target) return;
+    target.focus({ preventScroll: true });
+    target.select();
+    target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: inlineMode });
+  };
+
   // Manejar entrada de teclado y saltar foco
   const handleKeyDown = (e, globalRowIdx, talla) => {
     const tallaInt = parseInt(talla, 10);
@@ -214,38 +222,32 @@ export default function InventoryGrid() {
       if (tallaInt < 44) {
         const nextTalla = tallaInt + 1;
         const target = document.getElementById(`input-${globalRowIdx}-${nextTalla}`);
-        target?.focus();
-        target?.select();
+        focusInput(target, 'nearest');
       } else if (globalRowIdx + 1 < totalColorRows) {
         const target = document.getElementById(`input-${globalRowIdx + 1}-21`);
-        target?.focus();
-        target?.select();
+        focusInput(target, 'nearest');
       }
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
       if (tallaInt > 21) {
         const prevTalla = tallaInt - 1;
         const target = document.getElementById(`input-${globalRowIdx}-${prevTalla}`);
-        target?.focus();
-        target?.select();
+        focusInput(target, 'nearest');
       } else if (globalRowIdx > 0) {
         const target = document.getElementById(`input-${globalRowIdx - 1}-44`);
-        target?.focus();
-        target?.select();
+        focusInput(target, 'nearest');
       }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (globalRowIdx > 0) {
         const target = document.getElementById(`input-${globalRowIdx - 1}-${talla}`);
-        target?.focus();
-        target?.select();
+        focusInput(target, 'nearest');
       }
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (globalRowIdx + 1 < totalColorRows) {
         const target = document.getElementById(`input-${globalRowIdx + 1}-${talla}`);
-        target?.focus();
-        target?.select();
+        focusInput(target, 'nearest');
       }
     }
   };
@@ -725,7 +727,7 @@ export default function InventoryGrid() {
               No hay modelos registrados en el sistema. Presione "Agregar Modelo" para comenzar.
             </div>
           ) : (
-            <div className="w-full max-w-full min-w-0 flex-1 min-h-0 overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm relative">
+            <div className="w-full max-w-full min-w-0 flex-1 min-h-0 overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm relative inventory-scrollbar">
           <table className="w-full border-separate border-spacing-0 min-w-[1300px] text-sm">
             <thead className="sticky top-0 z-20 shadow-sm">
               <tr className="bg-gray-100 text-torcoroma-dark font-extrabold text-center">
@@ -822,7 +824,7 @@ export default function InventoryGrid() {
                               type="number"
                               min="0"
                               disabled={!isAdmin}
-                              className={`w-9 py-1 text-center font-semibold bg-transparent rounded border border-transparent outline-none transition text-sm scroll-mt-14 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                              className={`w-9 py-1 text-center font-semibold bg-transparent rounded border border-transparent outline-none transition text-sm scroll-mt-14 scroll-ml-[210px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                                 isAdmin ? 'focus:bg-white focus:border-torcoroma-gold focus:ring-1 focus:ring-torcoroma-gold' : 'cursor-not-allowed opacity-80'
                               }`}
                               value={displayVal}

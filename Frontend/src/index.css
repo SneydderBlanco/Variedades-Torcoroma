@@ -28,3 +28,35 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #b88b15;
 }
+
+/* Scrollbar ergonómico y visible para el contenedor de la tabla de inventario */
+.inventory-scrollbar::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.inventory-scrollbar::-webkit-scrollbar-track {
+  background: #f9fafb;
+  border-radius: 10px;
+}
+
+.inventory-scrollbar::-webkit-scrollbar-thumb {
+  background: #D9A71E;
+  border-radius: 10px;
+}
+
+.inventory-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #b88b15;
+}
+
+.inventory-scrollbar::-webkit-scrollbar-corner {
+  background: #f9fafb;
+}
+
+/* Soporte de colores y grosor para Firefox */
+@supports (-moz-appearance: none) {
+  .inventory-scrollbar {
+    scrollbar-color: #D9A71E #f9fafb;
+    scrollbar-width: auto;
+  }
+}
